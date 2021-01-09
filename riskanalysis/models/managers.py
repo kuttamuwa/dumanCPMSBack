@@ -3,7 +3,6 @@ from django.db import models
 from appconfig.models.models import Domains, Subtypes
 from riskanalysis.errors.analyze import *
 from riskanalysis.errors.validators import WarrantAmountConflictError
-from riskanalysis.models.models import DataSetModel
 
 """
 :exception: Şu anda Customer sütunu CheckAccount üzerinden gelmektedir. 
@@ -20,7 +19,7 @@ import pandas as pd
 import numpy as np
 
 
-class BaseAnalyze:
+class BaseAnalyze(models.Manager):
     domains = Domains.objects.all()
     subtypes = Subtypes.objects.all()
 
@@ -68,7 +67,7 @@ class RiskDataSetManager(models.Manager):
         return super(RiskDataSetManager, self).create(*args, **kwargs)
 
 
-class AnalyzeManager(models.Manager, BaseAnalyze):
+class AnalyzeManager(BaseAnalyze):
     _riskdataset = None
 
     @property
@@ -187,7 +186,7 @@ class AnalyzeManager(models.Manager, BaseAnalyze):
         pts_teminat_riski = self.karsilastirma_teminat_limit()
 
     def create(self, riskdataset_pk):
-        rd = DataSetModel.objects.get(pk=riskdataset_pk)
+        rd = self.objects.get(pk=riskdataset_pk)
         self.riskdataset = rd
 
         analiz_karari = self.analiz_karari()

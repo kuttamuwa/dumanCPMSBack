@@ -40,6 +40,8 @@ INSTALLED_APPS = [
 
     'appconfig',
     'checkaccount',
+    'riskanalysis',
+
 ]
 
 MIDDLEWARE = [

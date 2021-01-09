@@ -6,6 +6,7 @@ from .fields import DumanModelFileField
 
 
 class Cities(models.Model):
+    data_id = models.AutoField(primary_key=True)
     city_plate_number = models.PositiveSmallIntegerField(db_column='CITY_PLATE_NUMBER', unique=True,
                                                          null=True)
     name = models.CharField(max_length=100, null=True, verbose_name='Şehir', db_column='IL')
@@ -15,6 +16,7 @@ class Cities(models.Model):
 
 
 class Districts(models.Model):
+    data_id = models.AutoField(primary_key=True)
     city = models.ForeignKey(Cities, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=100, null=True, verbose_name='İlçe', db_column='ILCE')
 

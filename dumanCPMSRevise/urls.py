@@ -23,8 +23,10 @@ urlpatterns = [
     path('__debug__/', include(debug_toolbar.urls)),
     path('admin/', admin.site.urls),
 
-    path('checkaccount/', include('checkaccount.controllers.urls')),
     path('appconfig/', include('appconfig.controllers.urls')),
 
+    # modules
+    path('checkaccount/', include('checkaccount.controllers.urls')),
+    path('riskanalysis/', include('riskanalysis.controller.urls'))
 
 ]
