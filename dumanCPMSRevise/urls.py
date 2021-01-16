@@ -23,6 +23,8 @@ urlpatterns = [
     path('__debug__/', include(debug_toolbar.urls)),
     path('admin/', admin.site.urls),
 
+    path('', include('home.urls')),
+
     path('appconfig/', include('appconfig.controllers.urls')),
 
     # modules

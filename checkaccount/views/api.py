@@ -17,6 +17,9 @@ class CheckAccountAPI(viewsets.ModelViewSet):
 
     permission_classes = [IsAuthenticated, CheckAccountPermission]
 
+    def get_queryset(self):
+        return super(CheckAccountAPI, self).get_queryset()
+
 
 class AccountDocumentsAPI(viewsets.ModelViewSet):
     queryset = AccountDocuments.objects.all().order_by('-created_date')

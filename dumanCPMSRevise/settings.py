@@ -24,7 +24,7 @@ SECRET_KEY = 'd_hy!@)01pkm38_tgq$r_n&yyxft%1$7#r8iih5$!gnnjj_=wj'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Application definition
 
@@ -84,7 +84,7 @@ WSGI_APPLICATION = 'dumanCPMSRevise.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'dcpms_revise',
+        'NAME': 'dcpms_prod',
         'USER': 'postgres',
         'PASSWORD': 'figo1190',
         'HOST': 'localhost',

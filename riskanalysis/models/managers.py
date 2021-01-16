@@ -67,7 +67,7 @@ class RiskDataSetManager(models.Manager):
         return super(RiskDataSetManager, self).create(*args, **kwargs)
 
 
-class AnalyzeManager(BaseAnalyze):
+class AnalyzeManager(models.Manager):
     _riskdataset = None
 
     @property

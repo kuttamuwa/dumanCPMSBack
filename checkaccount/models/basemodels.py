@@ -8,13 +8,17 @@ class BaseModel(models.Model):
     created_date = models.DateTimeField(auto_now_add=True, db_column='CREATED_DATE',
                                         verbose_name='Created Date')
 
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
-                                   on_delete=models.SET_NULL, verbose_name='Created by')
+    # created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+    #                                on_delete=models.SET_NULL, verbose_name='Created by',
+    #                                related_name='%(CheckAccount)s_%(BaseModel)s_related')
+    # edited_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+    #                               on_delete=models.SET_NULL, verbose_name='Edited by',
+    #                               related_name='%(CheckAccount)s_%(BaseModel)s_related')
 
     class Meta:
         abstract = True
         db_table = 'CA_BASEMODEL'
-        ordering = ['created_date']
+        # ordering = ['created_date']
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):

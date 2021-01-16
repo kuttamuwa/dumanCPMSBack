@@ -139,7 +139,7 @@ class RiskDataSetPoints(BaseModel):
                                      null=True)
     point = models.FloatField(db_column='CALC_PTS', null=True, blank=True)
     variable = models.CharField(max_length=100, db_column='VARIABLE', null=True, blank=True)
-    analyzer = AnalyzeManager()
+    # analyzer = AnalyzeManager()
 
     # son variable TOPLAM olacak
 

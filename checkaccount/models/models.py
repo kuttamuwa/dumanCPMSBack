@@ -5,7 +5,7 @@ from .basemodels import BaseModel
 from .fields import DumanModelFileField
 
 
-class Cities(models.Model):
+class Cities(BaseModel):
     data_id = models.AutoField(primary_key=True)
     city_plate_number = models.PositiveSmallIntegerField(db_column='CITY_PLATE_NUMBER', unique=True,
                                                          null=True)
@@ -15,7 +15,7 @@ class Cities(models.Model):
         db_table = 'CITIES'
 
 
-class Districts(models.Model):
+class Districts(BaseModel):
     data_id = models.AutoField(primary_key=True)
     city = models.ForeignKey(Cities, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=100, null=True, verbose_name='İlçe', db_column='ILCE')
@@ -75,18 +75,21 @@ class CheckAccount(BaseModel):
                                        db_column='TAXPAYER_NUMBER', null=True)
 
     birthplace = models.ForeignKey(Cities, on_delete=models.CASCADE, verbose_name='Doğum yeri',
-                                   null=True, blank=True)
+                                   null=True, blank=True, related_name='AccountBirthPlace')
     tax_department = models.CharField(max_length=100, verbose_name='Vergi Departmanı', db_column='TAX_DEPARTMENT',
                                       null=True)
     firm_address = models.CharField(max_length=200, verbose_name='Firma Adresi', db_column='FIRM_ADDRESS', null=True)
 
     firm_key_contact_personnel = models.ForeignKey(SysPersonnel, max_length=70, on_delete=models.SET_NULL,
-                                                   verbose_name='Firma İletişim', null=True)
-    sector = models.ForeignKey(Sectors, on_delete=models.SET_NULL, null=True, verbose_name='Sektör')
+                                                   verbose_name='Firma İletişim', null=True,
+                                                   related_name='AccountPersonnel')
+    sector = models.ForeignKey(Sectors, on_delete=models.SET_NULL, null=True, verbose_name='Sektör',
+                               related_name='AccountSector')
 
     city = models.ForeignKey(Cities, on_delete=models.SET_NULL, null=True,
-                             verbose_name='Şehir')
-    district = models.ForeignKey(Districts, on_delete=models.SET_NULL, null=True, verbose_name='İlçe')
+                             verbose_name='Şehir', related_name='AccountCity')
+    district = models.ForeignKey(Districts, on_delete=models.SET_NULL, null=True, verbose_name='İlçe',
+                                 related_name='AccountDistrict')
 
     phone_number = models.CharField(max_length=15, verbose_name='Telefon numarası',
                                     unique=False, db_column='PHONE_NUMBER', null=True)
