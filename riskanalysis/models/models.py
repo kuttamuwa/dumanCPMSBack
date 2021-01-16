@@ -105,7 +105,12 @@ class DataSetModel(BaseModel):
         return self.ort_siparis_tutari_12ay // self.bakiye
 
     def hesapla_analiz_karari(self):
-        pass
+        decision = False
+        if self.iade_yuzdesi_12 and self.ort_siparis_tutari_12ay and self.iade_yuzdesi_1:
+            if self.ort_siparis_tutari_12ay * 0.1 <= self.iade_yuzdesi_1:
+                decision = True
+
+        return decision
 
     def hesapla_satis_ort_sapma(self):
         return self.x_y_z(self.ort_siparis_tutari_1ay, self.ort_siparis_tutari_1ay)
@@ -141,7 +146,7 @@ class RiskDataSetPoints(BaseModel):
     variable = models.CharField(max_length=100, db_column='VARIABLE', null=True, blank=True)
 
     objects = models.Manager()
-    analyzer = AnalyzeManager()
+    analyzer = AnalyzeManager
 
     class Meta:
         db_table = 'RISK_DATASET_POINTS'

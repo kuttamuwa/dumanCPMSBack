@@ -23,6 +23,19 @@ class BaseAnalyze(models.Manager):
     domains = Domains.objects.all()
     subtypes = Subtypes.objects.all()
 
+    def check_domain_subtype(self, load_again=True):
+        if not self.domains or self.subtypes or load_again:
+            Subtypes.objects.all().delete()
+            Domains.objects.all().delete()
+            Domains.import_from_excel()
+            Subtypes.import_from_excel()
+
+        self.set_domain_subtype()
+
+    def set_domain_subtype(self):
+        self.domains = Domains.objects.all()
+        self.subtypes = Subtypes.objects.all()
+
     def get_intervals_by_name(self, name, convert_df=False):
         d = self.domains.get(name=name)
         s = self.subtypes.filter(domain=d)
@@ -67,8 +80,11 @@ class RiskDataSetManager(models.Manager):
         return super(RiskDataSetManager, self).create(*args, **kwargs)
 
 
-class AnalyzeManager(models.Manager):
+class AnalyzeManager(BaseAnalyze):
     _riskdataset = None
+
+    def __init__(self, riskdataset):
+        self._riskdataset = riskdataset
 
     @property
     def riskdataset(self):
@@ -81,17 +97,27 @@ class AnalyzeManager(models.Manager):
     def kontrol(self):
         if self.riskdataset is None:
             raise NoRiskDataset
+        self.check_domain_subtype(load_again=True)
 
     def analyze(self):
         self.kontrol()
+        pts = 0
+
+        if self.analiz_karari():
+            pts = self.calc_all_pts()
+
+        return pts
 
     def analiz_karari(self):
         """
         Son 12 Ay İade %si: İade aylık satışın % 10 unu aşmazsa hesaplama yapılmayacak
         HINT: Puanlaması başka fonksiyonda
         """
-
         analiz_karari = self.riskdataset.hesapla_analiz_karari()
+
+        # todo : False çıkma ihtimali olabilir. O yüzden default True yaptık
+        analiz_karari = True
+
         return analiz_karari
 
     def karsilastirma_son_12ay_satis_ort(self):
@@ -185,10 +211,8 @@ class AnalyzeManager(models.Manager):
         pts_devir_gunu = self.devir_gunu()
         pts_teminat_riski = self.karsilastirma_teminat_limit()
 
+        return 12
+
     def create(self, *args, **kwargs):
-        rd = self.objects.get(pk=kwargs.get('riskdataset_pk'))
-        self.riskdataset = rd
-
-        analiz_karari = self.analiz_karari()
-
+        self.analyze()
         return super(AnalyzeManager, self).create(*args, **kwargs)
