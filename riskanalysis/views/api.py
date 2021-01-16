@@ -1,6 +1,7 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from appconfig.models.models import Domains
 from riskanalysis.controller.util import RiskAnalysisUtil
@@ -38,14 +39,6 @@ class RiskPointsAPI(viewsets.ModelViewSet):
     serializer_class = RiskPointsSerializer  # general serializer
     permission_classes = [IsAuthenticated, RiskPointsPermission]
 
-    # lookup_field = 'data_id'
-
-    @staticmethod
-    def test_create_point():
-        rd = DataSetModel.objects.first()
-        pnt = RiskDataSetPoints(risk_dataset=rd, variable='TOPLAM', point=47.4)
-        pnt.save()
-
     def __get_riskdataset(self):
         return DataSetModel.objects.filter(**self.kwargs)
 
@@ -63,11 +56,7 @@ class RiskPointsAPI(viewsets.ModelViewSet):
     def get_method_queryset(self, qset):
         self.serializer_class = RiskPointsGetSerializer
         rd = self.__get_riskdataset()
-        qset = qset.filter(variable='TOPLAM', risk_dataset__in=rd)
-        return qset
-
-    def post_method_queryset(self, qset):
-        self.serializer_class = RiskPointsPostSerializer
+        qset = qset.filter(risk_dataset__in=rd)
         return qset
 
     def analyze_data(self, riskdataset_pk):
@@ -82,16 +71,35 @@ class RiskPointsAPI(viewsets.ModelViewSet):
                 return DomainDoesNotExist
 
             except ValueError as err:
-                r = RiskParamValueError(detail=err)
-                return r
+                return RiskParamValueError(detail=err)
+
+            return rp
 
     def create(self, request, *args, **kwargs):
+        """
+        Creation işlemi risk points hesaplamalarında izin verilmez. Buraya gelen create isteği aslında
+        risk_dataset parametresi verilmiş
+        :param request:
+        :param args:
+        :param kwargs:
+        :return:
+        """
         try:
-            pk = int(request.POST.get('risk_dataset'))
-            self.analyze_data(riskdataset_pk=pk)
-            return self.retrieve(request, *args, **kwargs)
+            pk = int(request.POST['risk_dataset'])
+            rp = self.analyze_data(riskdataset_pk=pk)
+            rp.save()
+
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+
         except ValueError:
             return RiskParamValueError
+
+        except KeyError:
+            return RiskParamValueError(detail='Muhtemelen risk analiz parametresi vermediniz. \n'
+                                              'APIye risk_dataset=1 gibi göndermelisiniz')
 
     def get_queryset(self):
         qset = super(RiskPointsAPI, self).get_queryset()
