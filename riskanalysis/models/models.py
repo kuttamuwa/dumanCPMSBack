@@ -119,7 +119,7 @@ class DataSetModel(BaseModel):
                 and i.verbose_name not in ('basemodel ptr',)]
 
     def __str__(self):
-        return f"Risk Dataset for : {self.musteri}"
+        return f"Risk Dataset: {self.musteri}"
 
     def get_field_config_name(self, config_object, **kwargs):
         desired_field = kwargs.get('field')
@@ -140,12 +140,11 @@ class RiskDataSetPoints(BaseModel):
     point = models.FloatField(db_column='CALC_PTS', null=True, blank=True)
     variable = models.CharField(max_length=100, db_column='VARIABLE', null=True, blank=True)
 
-    toplam = models.FloatField(db_column='POINT', verbose_name='General Point', default=0)
-
+    objects = models.Manager()
     analyzer = AnalyzeManager()
 
     class Meta:
         db_table = 'RISK_DATASET_POINTS'
 
     def __str__(self):
-        return f'POINTS OF {self.risk_dataset.musteri}'
+        return f'POINTS OF {self.risk_dataset}'

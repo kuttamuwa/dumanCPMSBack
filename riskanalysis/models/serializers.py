@@ -13,3 +13,17 @@ class RiskPointsSerializer(serializers.ModelSerializer):
     class Meta:
         model = RiskDataSetPoints
         fields = '__all__'
+
+
+class RiskPointsGetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RiskDataSetPoints
+        fields = ('risk_dataset', 'point', 'data_id')
+
+
+class RiskPointsPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RiskDataSetPoints
+        fields = ('risk_dataset', )
+
+

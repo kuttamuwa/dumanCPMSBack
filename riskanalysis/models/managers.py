@@ -78,12 +78,12 @@ class AnalyzeManager(models.Manager):
     def riskdataset(self, value):
         self.riskdataset = value
 
-    def check(self):
+    def kontrol(self):
         if self.riskdataset is None:
             raise NoRiskDataset
 
     def analyze(self):
-        self.check()
+        self.kontrol()
 
     def analiz_karari(self):
         """
@@ -185,8 +185,10 @@ class AnalyzeManager(models.Manager):
         pts_devir_gunu = self.devir_gunu()
         pts_teminat_riski = self.karsilastirma_teminat_limit()
 
-    def create(self, riskdataset_pk):
-        rd = self.objects.get(pk=riskdataset_pk)
+    def create(self, *args, **kwargs):
+        rd = self.objects.get(pk=kwargs.get('riskdataset_pk'))
         self.riskdataset = rd
 
         analiz_karari = self.analiz_karari()
+
+        return super(AnalyzeManager, self).create(*args, **kwargs)
