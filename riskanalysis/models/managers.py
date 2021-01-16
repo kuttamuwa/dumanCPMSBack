@@ -52,7 +52,7 @@ class RiskDataSetManager(models.Manager):
     def user_check(self, musteri, create_dummy=True):
         if musteri is None:
             if create_dummy:
-                return CheckAccount.dummy_creator.create_dummy(username='Dummy')
+                return CheckAccount.dummy_creator.create_dummy()
             else:
                 raise CheckAccount.DoesNotExist
 
@@ -61,7 +61,7 @@ class RiskDataSetManager(models.Manager):
             raise WarrantAmountConflictError
 
     def create(self, *args, **kwargs):
-        kwargs['user'] = self.user_check(musteri=kwargs.get('musteri'))
+        kwargs['musteri'] = self.user_check(musteri=kwargs.get('musteri'))
         self.teminat_check(kwargs.get('teminat_durumu'), kwargs.get('teminat_tutari'))
 
         return super(RiskDataSetManager, self).create(*args, **kwargs)

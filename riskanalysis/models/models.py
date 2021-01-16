@@ -139,9 +139,10 @@ class RiskDataSetPoints(BaseModel):
                                      null=True)
     point = models.FloatField(db_column='CALC_PTS', null=True, blank=True)
     variable = models.CharField(max_length=100, db_column='VARIABLE', null=True, blank=True)
-    # analyzer = AnalyzeManager()
 
-    # son variable TOPLAM olacak
+    toplam = models.FloatField(db_column='POINT', verbose_name='General Point', default=0)
+
+    analyzer = AnalyzeManager()
 
     class Meta:
         db_table = 'RISK_DATASET_POINTS'
