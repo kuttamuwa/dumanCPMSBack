@@ -86,7 +86,10 @@ class DataSetModel(BaseModel):
         return value
 
     def hesapla_karsilastir_teminat_limit(self):
-        return (self.teminat_tutari / self.limit) * 100
+        if self.teminat_durumu:
+            return (self.teminat_tutari / self.limit) * 100
+        else:
+            return 0
 
     def hesapla_devir_gunu(self):
         devir_hizi = self.hesapla_devir_hizi()
@@ -113,10 +116,17 @@ class DataSetModel(BaseModel):
         return decision
 
     def hesapla_satis_ort_sapma(self):
-        return self.x_y_z(self.ort_siparis_tutari_1ay, self.ort_siparis_tutari_1ay)
+        if self.ort_siparis_tutari_1ay and self.ort_siparis_tutari_12ay:
+            return self.x_y_z(self.ort_siparis_tutari_1ay, self.ort_siparis_tutari_12ay)
+        else:
+            raise ValueError('1 aylık ve(ya) 12 aylık ortalama sipariş tutarlarında kayıt bulunamamıştır !')
 
     def hesapla_iade_yuzdesi_sapma(self):
-        return self.x_y_z(self.iade_yuzdesi_1, self.iade_yuzdesi_12)
+        if self.iade_yuzdesi_1 and self.iade_yuzdesi_12:
+            return self.x_y_z(self.iade_yuzdesi_1, self.iade_yuzdesi_12)
+        else:
+            return 0
+            # raise ValueError('1 aylık ve(ya) 12 aylık iade yüzdelerinde kayıt bulunamamıştır !')
 
     @classmethod
     def get_domain_list(cls):
@@ -124,7 +134,7 @@ class DataSetModel(BaseModel):
                 and i.verbose_name not in ('basemodel ptr',)]
 
     def __str__(self):
-        return f"Risk Dataset: {self.musteri}"
+        return f"Risk Dataset: {self.musteri.firm_full_name}"
 
     def get_field_config_name(self, config_object, **kwargs):
         desired_field = kwargs.get('field')
@@ -140,7 +150,7 @@ class DataSetModel(BaseModel):
 
 
 class RiskDataSetPoints(BaseModel):
-    risk_dataset = models.ForeignKey(DataSetModel, on_delete=models.PROTECT, db_column='RELATED_RISK',
+    risk_dataset = models.ForeignKey(DataSetModel, on_delete=models.SET_NULL, db_column='RELATED_RISK',
                                      null=True)
     point = models.FloatField(db_column='CALC_PTS', null=True, blank=True)
     variable = models.CharField(max_length=100, db_column='VARIABLE', null=True, blank=True)

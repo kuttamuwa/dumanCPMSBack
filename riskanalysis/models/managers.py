@@ -41,18 +41,24 @@ class BaseAnalyze(models.Manager):
         s = self.subtypes.filter(domain=d)
 
         if convert_df:
-            df = pd.DataFrame(s.values('max_interval', 'min_interval', 'point'))
-            return df
+            s = pd.DataFrame(s.values('max_interval', 'min_interval', 'point'))
+            s.fillna(np.inf)
 
         return s, d.point
+
+    @staticmethod
+    def get_domain_sum_points():
+        return sum([i['point'] for i in Domains.objects.all().values('point')])
 
     @staticmethod
     def get_points_from_value(value, dataframe):
         pts = None
 
+        dataframe['max_interval'].fillna(np.inf, inplace=True)
+        dataframe['min_interval'].fillna(np.inf, inplace=True)
         if value is not None:
             for index, row in dataframe.iterrows():
-                if row["min_interval"] < value < row["max_interval"]:
+                if row["min_interval"] <= value < row["max_interval"]:
                     try:
                         pts = row['pnt']
                     except KeyError:
@@ -68,14 +74,29 @@ class RiskDataSetManager(models.Manager):
                 return CheckAccount.dummy_creator.create_dummy()
             else:
                 raise CheckAccount.DoesNotExist
+        else:
+            musteri = CheckAccount.objects.get_or_create(firm_full_name=musteri)
+            return musteri[0]
 
-    def teminat_check(self, teminat_durumu, teminat_tutari):
+    @staticmethod
+    def teminat_check(teminat_durumu, teminat_tutari):
         if not teminat_durumu and teminat_tutari:
             raise WarrantAmountConflictError
 
+        if teminat_durumu is None:
+            teminat_durumu = False
+
+        return teminat_durumu
+
     def create(self, *args, **kwargs):
         kwargs['musteri'] = self.user_check(musteri=kwargs.get('musteri'))
-        self.teminat_check(kwargs.get('teminat_durumu'), kwargs.get('teminat_tutari'))
+        kwargs['teminat_durumu'] = self.teminat_check(kwargs.get('teminat_durumu'), kwargs.get('teminat_tutari'))
+
+        return super(RiskDataSetManager, self).create(*args, **kwargs)
+
+    def get_or_create(self, *args, **kwargs):
+        kwargs['musteri'] = self.user_check(musteri=kwargs.get('musteri'))
+        kwargs['teminat_durumu'] = self.teminat_check(kwargs.get('teminat_durumu'), kwargs.get('teminat_tutari'))
 
         return super(RiskDataSetManager, self).create(*args, **kwargs)
 
@@ -134,7 +155,7 @@ class AnalyzeManager(BaseAnalyze):
 
         # multiply by domain point
 
-        return pts
+        return pts * domain_point
 
     def karsilastirma_son_12_ay_iade_yuzdesi(self):
         """
@@ -148,7 +169,7 @@ class AnalyzeManager(BaseAnalyze):
         iade_yuzdesi_sapma = self.riskdataset.hesapla_iade_yuzdesi_sapma()
         pts = self.get_points_from_value(iade_yuzdesi_sapma, pnt_df)
 
-        return pts
+        return pts * domain_point
 
     def ort_gecikme_gun_sayisi(self):
         """
@@ -161,7 +182,7 @@ class AnalyzeManager(BaseAnalyze):
         ort_gecikme_gun_sayisi = self.riskdataset.ort_gecikme_gun_sayisi
         pts = self.get_points_from_value(ort_gecikme_gun_sayisi, pnt_df)
 
-        return pts
+        return pts * domain_point
 
     def ort_gecikme_gun_bakiyesi(self):
         """
@@ -174,7 +195,7 @@ class AnalyzeManager(BaseAnalyze):
         ort_gecikme_gun_bakiyesi = self.riskdataset.ort_gecikme_gun_bakiyesi
         pts = self.get_points_from_value(ort_gecikme_gun_bakiyesi, pnt_df)
 
-        return pts
+        return pts * domain_point
 
     def devir_gunu(self):
         """
@@ -187,7 +208,7 @@ class AnalyzeManager(BaseAnalyze):
         devir_gunu = self.riskdataset.hesapla_devir_gunu()
         pts = self.get_points_from_value(devir_gunu, pnt_df)
 
-        return pts
+        return pts * domain_point
 
     def karsilastirma_teminat_limit(self):
         """
@@ -201,7 +222,7 @@ class AnalyzeManager(BaseAnalyze):
         teminat_limit_risk_kars_seviyesi = self.riskdataset.hesapla_karsilastir_teminat_limit()
         pts = self.get_points_from_value(teminat_limit_risk_kars_seviyesi, pnt_df)
 
-        return pts
+        return pts * domain_point
 
     def calc_all_pts(self):
         pts_satis_ort = self.karsilastirma_son_12ay_satis_ort()
@@ -211,7 +232,12 @@ class AnalyzeManager(BaseAnalyze):
         pts_devir_gunu = self.devir_gunu()
         pts_teminat_riski = self.karsilastirma_teminat_limit()
 
-        return 12
+        sum_pts = sum([pts_satis_ort, pts_iade_yuzdesi, pts_gecikme_bakiye, pts_gecikme_sayisi,
+                       pts_devir_gunu, pts_teminat_riski])
+        domain_sum_pts = self.get_domain_sum_points()
+        general_point = sum_pts / domain_sum_pts
+
+        return general_point
 
     def create(self, *args, **kwargs):
         self.analyze()
