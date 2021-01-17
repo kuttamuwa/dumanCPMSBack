@@ -28,25 +28,6 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Application definition
 
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-
-    'rest_framework',
-
-    'appconfig',
-    'checkaccount',
-    'riskanalysis',
-
-    # cors
-    'corsheaders',
-    'debug_toolbar'
-
-]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -62,6 +43,25 @@ MIDDLEWARE = [
 
     # Debug tools
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+]
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+
+    'rest_framework',
+
+    'checkaccount',
+    'riskanalysis',
+    'appconfig.controllers.apps.AppconfigConfig',
+
+    # cors
+    'corsheaders',
+    'debug_toolbar'
+
 ]
 
 CORS_ORIGIN_ALLOW_ALL = False
