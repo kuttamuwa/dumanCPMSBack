@@ -36,7 +36,7 @@ class Domains(BaseModel):
 
 
 class Subtypes(BaseModel):
-    domain = models.ForeignKey(Domains, on_delete=models.SET_NULL, max_length=100)
+    domain = models.ForeignKey(Domains, on_delete=models.CASCADE, max_length=100)
 
     point = models.FloatField(max_length=100, db_column='PTS', help_text='Point of specified intervals '
                                                                          'of your subtype related Domain')

@@ -5,37 +5,14 @@ import pandas as pd
 
 from django.test import TestCase
 
+from checkaccount.controllers.hookers import ImportCityDistrict
 from checkaccount.models.models import SysDepartments, SysPersonnel, Cities, Districts, CheckAccount, Sectors
 
 
 class CityDistrictsTest(TestCase):
-    folder_path = r"C:\Users\LENOVO\PycharmProjects\DumanCPMS\testdata"
-    iller = 'iller.xlsx'
-    ilceler = 'ilceler.xlsx'
-
-    def read_from_excel(self):
-        iller_excel = os.path.join(self.folder_path, self.iller)
-        ilce_excel = os.path.join(self.folder_path, self.ilceler)
-
-        df_iller = pd.read_excel(iller_excel)
-        df_ilceler = pd.read_excel(ilce_excel)
-
-        return df_iller, df_ilceler
-
     @staticmethod
-    def _save_iller(df):
-        print(df)
-
-    @staticmethod
-    def _save_ilceler(df):
-        print(df)
-
-    def test_runforme(self):
-        df_iller, df_ilceler = self.read_from_excel()
-        self._save_iller(df_iller)
-        self._save_ilceler(df_ilceler)
-
-        print("Imported city and districts")
+    def test_runforme():
+        ImportCityDistrict().test_runforme()
 
 
 class SysDepartmentsTest(TestCase):
@@ -126,4 +103,3 @@ class CheckAccountTest(TestCase):
     def test_create_one_account_api():
         # we will send post request to api
         api_url = "http://127.0.0.1:8000/checkaccount/api/accounts/"
-

@@ -11,6 +11,9 @@ class Cities(BaseModel):
                                                          null=True)
     name = models.CharField(max_length=100, null=True, verbose_name='Şehir', db_column='IL')
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         db_table = 'CITIES'
 
@@ -19,6 +22,9 @@ class Districts(BaseModel):
     data_id = models.AutoField(primary_key=True)
     city = models.ForeignKey(Cities, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=100, null=True, verbose_name='İlçe', db_column='ILCE')
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         db_table = 'DISTRICTS'
@@ -201,4 +207,3 @@ class PartnershipDocuments(BaseAccountDocument):
 
     class Meta:
         db_table = 'PARTNERSHIP_DOCUMENTS'
-

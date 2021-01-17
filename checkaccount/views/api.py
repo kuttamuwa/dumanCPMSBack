@@ -8,6 +8,7 @@ from checkaccount.models.serializers import CheckAccountSerializer, AccountDocum
     PartnershipDocumentsSerializer
 from checkaccount.models.serializers import SysPersonnelSerializer, SectorsSerializer, CitySerializer, \
     DistrictSerializer
+from checkaccount.tests.tests import CityDistrictsTest
 from checkaccount.views.permissions import CheckAccountPermission
 
 
@@ -15,10 +16,16 @@ class CheckAccountAPI(viewsets.ModelViewSet):
     queryset = CheckAccount.objects.all().order_by('-created_date')
     serializer_class = CheckAccountSerializer
 
-    permission_classes = [IsAuthenticated, CheckAccountPermission]
+    permission_classes = [
+        # IsAuthenticated,
+        # CheckAccountPermission
+    ]
 
     def get_queryset(self):
         return super(CheckAccountAPI, self).get_queryset()
+
+    def create(self, request, *args, **kwargs):
+        return super(CheckAccountAPI, self).create(request, *args, **kwargs)
 
 
 class AccountDocumentsAPI(viewsets.ModelViewSet):

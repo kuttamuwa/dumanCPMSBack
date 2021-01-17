@@ -42,6 +42,10 @@ INSTALLED_APPS = [
     'checkaccount',
     'riskanalysis',
 
+    # cors
+    'corsheaders',
+    'debug_toolbar'
+
 ]
 
 MIDDLEWARE = [
@@ -55,6 +59,19 @@ MIDDLEWARE = [
 
     # CORS
     'corsheaders.middleware.CorsMiddleware',
+
+    # Debug tools
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+]
+
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ORIGIN_WHITELIST = (
+    'http://localhost:8000',
+    'http://localhost:8080'  # vue js
+)
+
+INTERNAL_IPS = [
+    '127.0.0.1'
 ]
 
 ROOT_URLCONF = 'dumanCPMSRevise.urls'
@@ -90,6 +107,12 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': 5432,
     }
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+    )
 }
 
 # Password validation
@@ -128,12 +151,4 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-CORS_ORIGIN_ALLOW_ALL = False
-CORS_ORIGIN_WHITELIST = (
-    'http://localhost:8000',
-    'http://localhost:8080'  # vue js
-)
-
-INTERNAL_IPS = [
-    '127.0.0.1'
-]
+X_FRAME_OPTIONS = 'SAMEORIGIN'
