@@ -8,7 +8,6 @@ from checkaccount.models.serializers import CheckAccountSerializer, AccountDocum
     PartnershipDocumentsSerializer
 from checkaccount.models.serializers import SysPersonnelSerializer, SectorsSerializer, CitySerializer, \
     DistrictSerializer
-from checkaccount.tests.tests import CityDistrictsTest
 from checkaccount.views.permissions import CheckAccountPermission
 
 
@@ -23,6 +22,14 @@ class CheckAccountAPI(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return super(CheckAccountAPI, self).get_queryset()
+
+    def handle_post_data(self, data):
+        pass
+        # data['birthplace'] =
+        # data['firm_key_contact_personnel'] =
+        # data['sector'] =
+        # data['city'] =
+        # data['district'] =
 
     def create(self, request, *args, **kwargs):
         return super(CheckAccountAPI, self).create(request, *args, **kwargs)

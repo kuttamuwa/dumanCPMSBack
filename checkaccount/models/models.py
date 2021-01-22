@@ -80,22 +80,17 @@ class CheckAccount(BaseModel):
                                        unique=False,
                                        db_column='TAXPAYER_NUMBER', null=True)
 
-    birthplace = models.ForeignKey(Cities, on_delete=models.CASCADE, verbose_name='Doğum yeri',
-                                   null=True, blank=True, related_name='AccountBirthPlace')
+    birthplace = models.CharField(max_length=100, verbose_name='Doğum yeri',
+                                  null=True, blank=True)
     tax_department = models.CharField(max_length=100, verbose_name='Vergi Departmanı', db_column='TAX_DEPARTMENT',
                                       null=True)
     firm_address = models.CharField(max_length=200, verbose_name='Firma Adresi', db_column='FIRM_ADDRESS', null=True)
 
-    firm_key_contact_personnel = models.ForeignKey(SysPersonnel, max_length=70, on_delete=models.SET_NULL,
-                                                   verbose_name='Firma İletişim', null=True,
-                                                   related_name='AccountPersonnel')
-    sector = models.ForeignKey(Sectors, on_delete=models.SET_NULL, null=True, verbose_name='Sektör',
-                               related_name='AccountSector')
+    firm_key_contact_personnel = models.CharField(max_length=70, verbose_name='Firma İletişim', null=True, )
+    sector = models.CharField(max_length=70, null=True, verbose_name='Sektör')
 
-    city = models.ForeignKey(Cities, on_delete=models.SET_NULL, null=True,
-                             verbose_name='Şehir', related_name='AccountCity')
-    district = models.ForeignKey(Districts, on_delete=models.SET_NULL, null=True, verbose_name='İlçe',
-                                 related_name='AccountDistrict')
+    city = models.CharField(max_length=70, null=True, verbose_name='Şehir')
+    district = models.CharField(max_length=100, null=True, verbose_name='İlçe')
 
     phone_number = models.CharField(max_length=15, verbose_name='Telefon numarası',
                                     unique=False, db_column='PHONE_NUMBER', null=True)
