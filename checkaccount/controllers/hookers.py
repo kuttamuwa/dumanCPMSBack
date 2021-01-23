@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-from checkaccount.models.models import Cities, Districts
+from checkaccount.models.models import Cities, Districts, SysPersonnel, SysDepartments
 
 
 class ImportCityDistrict:
@@ -31,3 +31,35 @@ class ImportCityDistrict:
             self._save(df)
 
             print("Imported city and districts")
+
+
+class ImportPersonnels:
+    folder_path = r"C:\Users\LENOVO\PycharmProjects\dumanCPMSRevise\checkaccount\tests"
+    personnels = 'personnels.xlsx'
+
+    def read_from_excel(self):
+        personel_df = os.path.join(self.folder_path, self.personnels)
+        df = pd.read_excel(personel_df)
+
+        return df
+
+    @staticmethod
+    def _save(df):
+        for index, row in df.iterrows():
+            firstname = row['firstname']
+            surname = row['surname']
+            username = row['username']
+            department = SysDepartments.objects.get_or_create(department_name=row['department'])[0]
+            position = row['position']
+
+            SysPersonnel.objects.get_or_create(firstname=firstname, surname=surname, username=username,
+                                               department=department, position=position)
+
+        return True
+
+    def test_runforme(self):
+        if len(SysPersonnel.objects.all()) == 0:
+            df = self.read_from_excel()
+            self._save(df)
+
+            print("Imported sys personnels")

@@ -69,6 +69,11 @@ class DataSetModel(BaseModel):
 
     bakiye = models.PositiveIntegerField(db_column='BALANCE', blank=True, help_text='Bakiye', null=True,
                                          verbose_name='Bakiye')
+
+    # will be calculated later with analyzer service
+    general_point = models.FloatField(verbose_name='Genel Puan', null=True, blank=True,
+                                      db_column='GENERAL_POINT')
+
     """
     Devir günü
     Devir hızı
@@ -102,10 +107,10 @@ class DataSetModel(BaseModel):
         if self.bakiye is None:
             raise BalanceError
 
-        if self.ort_siparis_tutari_12ay is None:
+        if self.ort_siparis_tutari_1ay is None:
             raise BalanceError
 
-        return self.ort_siparis_tutari_12ay // self.bakiye
+        return self.ort_siparis_tutari_1ay / self.bakiye
 
     def hesapla_analiz_karari(self):
         decision = False

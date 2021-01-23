@@ -52,7 +52,7 @@ class BaseAnalyze(models.Manager):
 
     @staticmethod
     def get_points_from_value(value, dataframe):
-        pts = None
+        pts = 0
 
         dataframe['max_interval'].fillna(np.inf, inplace=True)
         dataframe['min_interval'].fillna(np.inf, inplace=True)
@@ -64,6 +64,7 @@ class BaseAnalyze(models.Manager):
                     except KeyError:
                         pts = row['point']
 
+                    return pts
         return pts
 
 
@@ -94,9 +95,18 @@ class RiskDataSetManager(models.Manager):
 
         return super(RiskDataSetManager, self).create(*args, **kwargs)
 
+    @staticmethod
+    def __nan_to_none(args, kwargs):
+        args = [None if pd.isna(i) else i for i in args]
+        kwargs = {k: None if pd.isna(v) else v for k, v in kwargs.items()}
+
+        return args, kwargs
+
     def get_or_create(self, *args, **kwargs):
         kwargs['musteri'] = self.user_check(musteri=kwargs.get('musteri'))
         kwargs['teminat_durumu'] = self.teminat_check(kwargs.get('teminat_durumu'), kwargs.get('teminat_tutari'))
+
+        args, kwargs = self.__nan_to_none(args, kwargs)
 
         return super(RiskDataSetManager, self).create(*args, **kwargs)
 
@@ -122,12 +132,10 @@ class AnalyzeManager(BaseAnalyze):
 
     def analyze(self):
         self.kontrol()
-        pts = 0
 
         if self.analiz_karari():
-            pts = self.calc_all_pts()
-
-        return pts
+            general_point = self.calc_all_pts()
+            return general_point
 
     def analiz_karari(self):
         """
@@ -154,7 +162,6 @@ class AnalyzeManager(BaseAnalyze):
         pts = self.get_points_from_value(siparis_ort_sapma, pnt_df)
 
         # multiply by domain point
-
         return pts * domain_point
 
     def karsilastirma_son_12_ay_iade_yuzdesi(self):

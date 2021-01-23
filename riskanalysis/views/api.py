@@ -15,29 +15,27 @@ class DatasetAPI(viewsets.ModelViewSet):
     queryset = DataSetModel.objects.all().order_by('-created_date')
     serializer_class = DatasetSerializer
 
-    permission_classes = [IsAuthenticated, DatasetPermission]
-
-    def get_queryset(self):
-        self.import_data()
-        return super(DatasetAPI, self).get_queryset()
+    permission_classes = [
+        # IsAuthenticated, DatasetPermission
+    ]
 
     @staticmethod
-    def import_data(load_again=True):
-        if load_again:
-            DataSetModel.objects.all().delete()
+    def fill_all_points(again=False):
+        RiskPointsAPI().analyze_all(again)
 
-        mpys = r"C:\Users\LENOVO\PycharmProjects\dumanCPMSRevise\riskanalysis\data\OrnekMPYSTurkcev2.xlsx"
-        util = RiskAnalysisUtil()
-        data_list = util.import_from_excel(mpys)
-        for i in data_list:
-            rd = DataSetModel.objects.get_or_create(**i)
-            rd.save()
+    def get_queryset(self):
+        self.fill_all_points()
+        qset = super(DatasetAPI, self).get_queryset()
+
+        return qset
 
 
 class RiskPointsAPI(viewsets.ModelViewSet):
     queryset = RiskDataSetPoints.objects.all().order_by('-created_date')
     serializer_class = RiskPointsSerializer  # general serializer
-    permission_classes = [IsAuthenticated, RiskPointsPermission]
+    permission_classes = [
+        # IsAuthenticated, RiskPointsPermission
+    ]
 
     def __get_riskdataset(self):
         return DataSetModel.objects.filter(**self.kwargs)
@@ -59,14 +57,31 @@ class RiskPointsAPI(viewsets.ModelViewSet):
         qset = qset.filter(risk_dataset__in=rd)
         return qset
 
-    def analyze_data(self, riskdataset_pk):
-        if riskdataset_pk:
-            rd = self.get_one_riskdataset(pk=riskdataset_pk)
-            rp = RiskDataSetPoints(risk_dataset=rd, variable='TOPLAM')
+    def analyze_all(self, again=False):
+        for rd in DataSetModel.objects.all():
+            self.analyze_data(rd.pk, again=again)
+
+    def analyze_data(self, riskdataset_pk, **kwargs):
+        dataset = kwargs.get('riskdataset')
+        again = kwargs.get('again')
+
+        if dataset is None:
+            if riskdataset_pk:
+                dataset = self.get_one_riskdataset(pk=riskdataset_pk)
+            else:
+                RiskParamValueError(detail='Not enough data ! \n'
+                                           'No primary key or dataset object was defined.')
+
+        if dataset.general_point is None and again is False:
+            rp = RiskDataSetPoints(risk_dataset=dataset, variable='TOPLAM')
             analyzer = rp.analyzer(rp.risk_dataset)
             try:
-                general_pts = analyzer.analyze()
-                rp.point = general_pts
+                general_point = analyzer.analyze()
+                rp.point = general_point
+                dataset.general_point = general_point
+
+                dataset.save()
+                rp.save()
             except Domains.DoesNotExist:
                 return DomainDoesNotExist
 
