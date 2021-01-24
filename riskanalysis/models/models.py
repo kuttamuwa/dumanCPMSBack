@@ -1,12 +1,10 @@
 import numpy as np
+import pandas as pd
 from django.db import models
 
-from riskanalysis.errors.validators import BalanceError, MaturityAvg12Balance, WarrantError
+from riskanalysis.errors.validators import BalanceError, NoImplementedParameter
 from riskanalysis.models.basemodels import BaseModel
 from riskanalysis.models.managers import RiskDataSetManager, AnalyzeManager
-
-import pandas as pd
-import os
 
 """
 :exception: Şu anda Customer sütunu CheckAccount üzerinden gelmektedir. 
@@ -163,14 +161,23 @@ class DataSetModel(BaseModel):
     def hesapla_teminatharicibakiye_risk(self):
         return self.bakiye - self.teminat_tutari
 
-    def hesapla_devir_hizi(self):
+    def hesapla_devir_hizi(self, ay=1):
+        if ay == 12:
+            siparis_tutari = self.ort_siparis_tutari_12ay
+
+        elif ay == 1:
+            siparis_tutari = self.ort_siparis_tutari_1ay
+
+        else:
+            raise NoImplementedParameter
+
         if self.bakiye is None:
             raise BalanceError
 
         if self.ort_siparis_tutari_1ay is None:
             raise BalanceError
 
-        return self.ort_siparis_tutari_1ay / self.bakiye
+        return siparis_tutari / self.bakiye
 
     def hesapla_analiz_karari(self):
         decision = False

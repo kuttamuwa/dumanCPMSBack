@@ -1,8 +1,9 @@
 from django.db import models
+from django.db.models import F
 
 from appconfig.models.models import Domains, Subtypes
 from riskanalysis.errors.analyze import *
-from riskanalysis.errors.validators import WarrantAmountConflictError
+from riskanalysis.errors.validators import WarrantAmountConflictError, BalanceError, NoImplementedParameter
 
 """
 :exception: Şu anda Customer sütunu CheckAccount üzerinden gelmektedir. 
@@ -109,6 +110,140 @@ class RiskDataSetManager(models.Manager):
         args, kwargs = self.__nan_to_none(args, kwargs)
 
         return super(RiskDataSetManager, self).create(*args, **kwargs)
+
+    def _limit_asimi(self):
+        """
+        Limit - Bakiye. > 0 -> True else -> False
+        :return:
+        """
+        pklist = []
+        for i in self.all():
+            if i.limit > i.bakiye:
+                pklist.append(i.data_id)
+
+        return self.filter(data_id__in=pklist)
+
+    def _vade_asimi(self):
+        """
+       vade aşımı ortalaması 0 veya None değil
+       :return:
+       """
+        return self.filter(vade_asimi_ortalamasi__gt=0)
+
+    def _iade_self_artis(self):
+        """
+        İadesi geçmiş aylara kıyasla artarsa?
+        iade_12 < iade_1 ise alalım
+        :return:
+        """
+        # todo: iyice deneyelim
+        # return self.filter(iade_yuzdesi_1__gt=F('iade_yuzdesi_12'))
+
+        pklist = []
+        for i in self.all():
+            i_1 = i.iade_yuzdesi_1
+            i_12 = i.iade_yuzdesi_12
+            if i_1 is not None and i_12 is not None:
+                if i_1 > i_12:
+                    pklist.append(i.data_id)
+
+        return self.filter(data_id__in=pklist)
+
+    def _sektor_kara_liste(self):
+        """
+        Sektör kara listede olanlar
+        :return:
+        """
+        raise NotImplementedError
+
+    def _sgk_borcu_olanlar(self):
+        """
+        SGK Borcu olanlar
+        :return:
+        """
+        raise NotImplementedError()
+
+    def _iade_baskalariyla_artis(self):
+        """
+        İadesi başka müşterilere kıyasla artmış?
+        Son 1 ay diye kabul edelim
+        iade_1 > avg(iade_1 for other customers)
+        :return:
+        """
+        iade_1_ort = self.exclude(iade_yuzdesi_1__isnull=True)
+        if len(iade_1_ort) > 0:
+            iade_1_ort = [i for i in self.values('iade_yuzdesi_1') if i is not None]
+            iade_1_ort = sum(iade_1_ort) // len(iade_1_ort)
+
+            iade_1_ort = self.filter(iade_yuzdesi_1__gte=iade_1_ort)
+
+        return iade_1_ort
+
+    def _devir_hizi_self_artmis(self):
+        """
+        Alacak devir hızı geçmiş aylara kıyasla artarsa
+        :return:
+        """
+        pklist = []
+
+        for i in self.all():
+            try:
+                d_hizi_1 = i.hesapla_devir_hizi(ay=1)
+                d_hizi_12 = i.hesapla_devir_hizi(ay=12)
+
+                if d_hizi_12 > d_hizi_1:
+                    pklist.append(i.data_id)
+
+            except BalanceError:
+                pass
+
+        return self.filter(data_id__in=pklist)
+
+    def _ort_devir_hizi(self, ay=1):
+        """
+        Ortalama devir hizi. ay = 1
+        :return:
+        """
+        if ay == 1:
+            values = [i.hesapla_devir_hizi() for i in self.all()]
+        elif ay == 12:
+            values = [i.hesapla_devir_hizi(ay=12) for i in self.all()]
+
+        else:
+            raise NoImplementedParameter
+
+        return sum(values) // len(values)
+
+    def _devir_hizi_baskalariyla_artmis(self):
+        """
+        Alacak devir hızı genel müşteri ortalamasına kıyasla yüksekse
+        Son 1 ay alalim
+        :return:
+        """
+        devir_hizi_ort_1ay = self._ort_devir_hizi(ay=1)
+        pklist = [i.data_id for i in self.all() if i.hesapla_devir_hizi() < devir_hizi_ort_1ay]
+
+        return pklist
+
+    def asim_yapanlar(self, dtype):
+        """
+        :return:
+        """
+        print("Vade asimi yapanlar bulunur")
+        dtype_list = {'v': self._vade_asimi,
+                      'dh1': self._devir_hizi_self_artmis,
+                      'dh2': self._devir_hizi_baskalariyla_artmis,
+                      'l': self._limit_asimi,
+                      'i1': self._iade_self_artis,
+                      'i2': self._iade_baskalariyla_artis,
+                      's': self._sgk_borcu_olanlar,
+                      'skl': self._sektor_kara_liste}
+        fnc = dtype_list[dtype]
+        try:
+            pklist = fnc()
+            return self.filter(pk__in=pklist)
+        except NotImplementedError:
+            print("No implemented error")
 
 
 class AnalyzeManager(BaseAnalyze):

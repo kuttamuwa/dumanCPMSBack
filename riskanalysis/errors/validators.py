@@ -25,3 +25,8 @@ class WarrantError(RiskAnalysisBaseException):
 
 class WarrantAmountConflictError(RiskAnalysisBaseException):
     message = "Teminat durumu yok denilmiş ama teminat tutarı girilmiş !"
+
+
+class NoImplementedParameter(RiskAnalysisBaseException):
+    message = "Yanlış parametre verilmiş !"
+

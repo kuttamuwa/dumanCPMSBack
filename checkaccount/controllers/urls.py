@@ -4,7 +4,7 @@ from checkaccount.views import views
 from checkaccount.views.routers import router
 
 urlpatterns = [
-    path('', views.CheckAccountMainView.as_view(), name='checkaccout-main'),
+    path('', views.checkaccount_page, name='checkaccout-main'),
 
     # crud - api
     path('api/', include(router.urls))
