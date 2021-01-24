@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -103,7 +104,7 @@ WSGI_APPLICATION = 'dumanCPMSRevise.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'dcpms_prod',
+        'NAME': 'ismaildb',
         'USER': 'postgres',
         'PASSWORD': 'figo1190',
         'HOST': 'localhost',
@@ -154,3 +155,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'MEDIA')
+

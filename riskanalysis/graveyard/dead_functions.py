@@ -21,3 +21,5 @@ def analyze_kar(self):
     saved_pts = self.set_risk_points_object(risk_dataset=rd, variable='Kar',
                                             calculated_pts=pts)
     return saved_pts
+
+

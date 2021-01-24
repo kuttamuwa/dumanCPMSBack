@@ -98,41 +98,7 @@ class CheckAccount(BaseModel):
     web_url = models.URLField(db_column='WEB_URL', verbose_name='Web adresi', null=True)
     email_addr = models.EmailField(verbose_name='Email adresi', unique=False, db_column='EMAIL_ADDR', null=True)
 
-    class Meta:
-        db_table = 'CHECKACCOUNT'
-
-    def __str__(self):
-        return self.firm_full_name
-
-    def save(self, *args, **kwargs):
-        # # validators kullanılmayan kurallar
-        #
-        # if self.firm_type is None:
-        #     LegalEntityMustHaveBirthPlace()
-        #
-        # if self.taxpayer_number is None:
-        #     SoleTraderMustHaveTaxPayerNumber()
-
-        super(CheckAccount, self).save(*args, **kwargs)
-
-
-class BaseAccountDocument(BaseModel):
-    customer = models.ForeignKey(CheckAccount, on_delete=models.SET_NULL, null=True)
-
-    class Meta:
-        abstract = True
-
-    def __str__(self):
-        return f"Attachments of {self.customer}"
-
-    def delete_by_type(self, _type):
-        pass
-
-    def check_all_field_uploaded(self):
-        pass
-
-
-class AccountDocuments(BaseAccountDocument):
+    # Account Documents ... !! Attention
     activity_certificate_pdf = DumanModelFileField(
         upload_to='activity_certificates/pdfs/',
         verbose_name='Activity Certificate',
@@ -147,8 +113,27 @@ class AccountDocuments(BaseAccountDocument):
         verbose_name='Authorized Signatures List',
         db_column='AUTHORIZED_SIG_LIST', null=True, blank=True)
 
+    # klasörde depolanabilir
+    partnership_structure_identity_copies = DumanModelFileField('ORTAKLIK YAPISI VE KIMLIK KOPYALARI',
+                                                                upload_to='pstruct_identity_copies/docs/',
+                                                                db_column='PARTNERSHIP_STRUCTURE_PATH',
+                                                                null=True, blank=True)
+
+    identity_copies = DumanModelFileField('KIMLIK KOPYALARI',
+                                          upload_to='identity_copies/docs/',
+                                          db_column='IDENTITY_COPIES_PATH',
+                                          null=True, blank=True)
+
+    board_management = DumanModelFileField('YONETIM KURULU YAPISI',
+                                           upload_to='board_management/docs/',
+                                           db_column='BOARD_MANAGEMENT_PATH',
+                                           null=True, blank=True)
+
     class Meta:
-        db_table = 'ACCOUNT_DOCUMENTS'
+        db_table = 'CHECKACCOUNT'
+
+    def __str__(self):
+        return self.firm_full_name
 
     def delete_by_type(self, _type):
         if _type == 1:
@@ -161,7 +146,13 @@ class AccountDocuments(BaseAccountDocument):
             self.authorized_signatures_list_pdf.delete()
 
         elif _type == 4:
-            self.delete()
+            self.partnership_structure_identity_copies.delete()
+
+        elif _type == 5:
+            self.identity_copies.delete()
+
+        elif _type == 6:
+            self.board_management.delete()
 
     def check_all_field_uploaded(self):
         fields = self._get_only_file_field_names()
@@ -181,24 +172,3 @@ class AccountDocuments(BaseAccountDocument):
 
     def _get_only_file_field_names(self):
         return [i for i in self._meta.get_fields() if isinstance(i, DumanModelFileField)]
-
-
-class PartnershipDocuments(BaseAccountDocument):
-    # klasörde depolanabilir
-    partnership_structure_identity_copies = DumanModelFileField('ORTAKLIK YAPISI VE KIMLIK KOPYALARI',
-                                                                upload_to='pstruct_identity_copies/docs/',
-                                                                db_column='PARTNERSHIP_STRUCTURE_PATH',
-                                                                null=True, blank=True)
-
-    identity_copies = DumanModelFileField('KIMLIK KOPYALARI',
-                                          upload_to='identity_copies/docs/',
-                                          db_column='IDENTITY_COPIES_PATH',
-                                          null=True, blank=True)
-
-    board_management = DumanModelFileField('YONETIM KURULU YAPISI',
-                                           upload_to='board_management/docs/',
-                                           db_column='BOARD_MANAGEMENT_PATH',
-                                           null=True, blank=True)
-
-    class Meta:
-        db_table = 'PARTNERSHIP_DOCUMENTS'

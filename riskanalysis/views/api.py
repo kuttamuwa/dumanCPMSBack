@@ -1,14 +1,15 @@
+from django.core.files import File
+from django.core.files.storage import default_storage
 from rest_framework import viewsets, status
 from rest_framework.exceptions import APIException
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.conf import settings
 
 from appconfig.models.models import Domains
-from riskanalysis.controller.util import RiskAnalysisUtil
 from riskanalysis.models.models import DataSetModel, RiskDataSetPoints
-from riskanalysis.models.serializers import RiskPointsSerializer, DatasetSerializer, RiskPointsGetSerializer, \
-    RiskPointsPostSerializer
-from riskanalysis.views.permissions import DatasetPermission, RiskPointsPermission
+from riskanalysis.models.serializers import RiskPointsSerializer, DatasetSerializer, RiskPointsGetSerializer
+import os
+import uuid
 
 
 class DatasetAPI(viewsets.ModelViewSet):
@@ -28,6 +29,42 @@ class DatasetAPI(viewsets.ModelViewSet):
         qset = super(DatasetAPI, self).get_queryset()
 
         return qset
+
+    @staticmethod
+    def handle_excel_file(file, errors, state):
+        try:
+            if file.name.endswith('.xlsx'):
+                save_path = os.path.join(settings.MEDIA_ROOT, 'rduploads', str(uuid.uuid1()) + ".xlsx")
+                save_path = default_storage.save(save_path, file)
+
+                # Trigger the risk dataset
+                try:
+                    DataSetModel().read_from_excel(save_path)
+                except Exception as err:
+                    # herhangi bi hata cikmis olabilir
+                    errors.append(err)
+                    state = status.HTTP_417_EXPECTATION_FAILED
+                finally:
+                    os.remove(save_path)
+
+        except KeyError:
+            errors.append("Risk analiz verisini ancak excel ile yükleyebilirsiniz ! \n"
+                          "API keyword: excel_file")
+            state = status.HTTP_400_BAD_REQUEST
+
+        return errors, state
+
+    def create(self, request, *args, **kwargs):
+        # file uploading or filling manually
+        errors = []
+        state = status.HTTP_200_OK
+        excel_file = request.FILES['excel']
+        errors, state = self.handle_excel_file(excel_file, errors, state)
+
+        return Response(data={
+            'errors': errors,
+        }, status=state
+        )
 
 
 class RiskPointsAPI(viewsets.ModelViewSet):
@@ -72,7 +109,7 @@ class RiskPointsAPI(viewsets.ModelViewSet):
                 RiskParamValueError(detail='Not enough data ! \n'
                                            'No primary key or dataset object was defined.')
 
-        if dataset.general_point is None and again is False:
+        if dataset.general_point is None or again:
             rp = RiskDataSetPoints(risk_dataset=dataset, variable='TOPLAM')
             analyzer = rp.analyzer(rp.risk_dataset)
             try:
@@ -88,11 +125,11 @@ class RiskPointsAPI(viewsets.ModelViewSet):
             except ValueError as err:
                 return RiskParamValueError(detail=err)
 
-            return rp
+            return general_point
 
     def create(self, request, *args, **kwargs):
         """
-        Creation işlemi risk points hesaplamalarında izin verilmez. Buraya gelen create isteği aslında
+        Creation işlemi risk points hesaplamalarında izin verilmez. Buraya gelen create isteği aslında POST
         risk_dataset parametresi verilmiş
         :param request:
         :param args:
@@ -100,14 +137,12 @@ class RiskPointsAPI(viewsets.ModelViewSet):
         :return:
         """
         try:
-            pk = int(request.POST['risk_dataset'])
-            rp = self.analyze_data(riskdataset_pk=pk)
-            rp.save()
+            pk = int(request.query_params['riskdataset_pk'])
+            again = bool(request.query_params.get('again', False))  # söylenmezse yapılmaz
 
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+            point = self.analyze_data(riskdataset_pk=pk, again=again)
+
+            return Response(point, status=status.HTTP_200_OK)
 
         except ValueError:
             return RiskParamValueError

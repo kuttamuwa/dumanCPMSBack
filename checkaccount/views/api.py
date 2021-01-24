@@ -1,14 +1,9 @@
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 
-from checkaccount.models.models import CheckAccount, AccountDocuments, PartnershipDocuments, SysPersonnel, Sectors, \
-    Cities, \
-    Districts
-from checkaccount.models.serializers import CheckAccountSerializer, AccountDocumentsSerializer, \
-    PartnershipDocumentsSerializer
+from checkaccount.models.models import CheckAccount, SysPersonnel, Sectors, Cities, Districts
+from checkaccount.models.serializers import CheckAccountSerializer
 from checkaccount.models.serializers import SysPersonnelSerializer, SectorsSerializer, CitySerializer, \
     DistrictSerializer
-from checkaccount.views.permissions import CheckAccountPermission
 
 
 class CheckAccountAPI(viewsets.ModelViewSet):
@@ -33,20 +28,6 @@ class CheckAccountAPI(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         return super(CheckAccountAPI, self).create(request, *args, **kwargs)
-
-
-class AccountDocumentsAPI(viewsets.ModelViewSet):
-    queryset = AccountDocuments.objects.all().order_by('-created_date')
-    serializer_class = AccountDocumentsSerializer
-    permission_classes = [IsAuthenticated, CheckAccountPermission]
-
-
-class PartnershipDocumentsAPI(viewsets.ModelViewSet):
-    queryset = PartnershipDocuments.objects.all().order_by('-created_date')
-    serializer_class = PartnershipDocumentsSerializer
-    permission_classes = [
-        # IsAuthenticated, CheckAccountPermission
-    ]
 
 
 class SysPersonnelAPI(viewsets.ModelViewSet):
@@ -78,7 +59,7 @@ class DistrictAPI(viewsets.ModelViewSet):
     serializer_class = DistrictSerializer
     permission_classes = [
         # IsAuthenticatedOrReadOnly
-                          ]
+    ]
 
     def get_queryset(self):
         city_name = str(self.request.query_params.get('city')).upper()

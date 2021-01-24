@@ -1,22 +1,10 @@
 from rest_framework import serializers
-from checkaccount.models.models import CheckAccount, AccountDocuments, PartnershipDocuments, SysPersonnel, Sectors, Cities, Districts
+from checkaccount.models.models import CheckAccount, SysPersonnel, Sectors, Cities, Districts
 
 
 class CheckAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = CheckAccount
-        fields = '__all__'
-
-
-class AccountDocumentsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AccountDocuments
-        fields = '__all__'
-
-
-class PartnershipDocumentsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PartnershipDocuments
         fields = '__all__'
 
 

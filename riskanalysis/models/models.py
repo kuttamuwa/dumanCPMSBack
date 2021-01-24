@@ -1,8 +1,12 @@
+import numpy as np
 from django.db import models
 
 from riskanalysis.errors.validators import BalanceError, MaturityAvg12Balance, WarrantError
 from riskanalysis.models.basemodels import BaseModel
 from riskanalysis.models.managers import RiskDataSetManager, AnalyzeManager
+
+import pandas as pd
+import os
 
 """
 :exception: Şu anda Customer sütunu CheckAccount üzerinden gelmektedir. 
@@ -82,6 +86,62 @@ class DataSetModel(BaseModel):
     Son 1 - 11 iade yüzdesi karşılaştırması
     """
 
+    def read_from_excel(self, riskdataset_path):
+        try:
+            df = pd.read_excel(riskdataset_path)
+            return self._save(df)
+        except IOError as err:
+            # dosya silinmis olabilir? o kisa sure icerisinde kim silecek gerci?
+            raise err
+
+        except KeyError as err:
+            # dogru sutunlar girilmemis olabilir
+            raise err
+
+    @staticmethod
+    def _save(df):
+        df.replace(np.nan, None, inplace=True)
+        for index, row in df.iterrows():
+            musteri = row['Müşteri']
+            limit = row['Limit']
+
+            # teminat
+            teminat_durumu = row['Teminat Durumu']
+            teminat_tutari = row['Teminat Tutarı']
+
+            # vade ve odeme
+            vade = row['Vade']
+            vade_asimi_ortalamasi = row.get('Ort. Vade Aşımı', None)
+            odeme_sikligi = row.get('Ödeme Sıklığı', None)
+
+            # Sipariş tutarlar
+            ort_siparis_tutari_12ay = row['Son 12 Ay Ortalama Sipariş Tutarı']
+            ort_siparis_tutari_1ay = row['Son 1 Ay Ortalama Sipariş Tutarı']
+
+            # iade yüzdeleri
+            iade_yuzdesi_1 = row.get('Son 1 ay iade yüzdesi', None)
+            iade_yuzdesi_12 = row['Son 12 ay iade yüzdesi']
+
+            # gecikmeler
+            ort_gecikme_gun_sayisi = row['Ort. Gecikme Gün Sayısı']
+            ort_gecikme_gun_bakiyesi = row['Ort. Gecikme Gün Bakiyesi (TL)']
+
+            bakiye = row.get('Bakiye')
+            DataSetModel.objects.get_or_create(musteri=musteri, limit=limit, teminat_durumu=teminat_durumu,
+                                               teminat_tutari=teminat_tutari,
+                                               vade=vade, vade_asimi_ortalamasi=vade_asimi_ortalamasi,
+                                               odeme_sikligi=odeme_sikligi,
+                                               ort_siparis_tutari_1ay=ort_siparis_tutari_1ay,
+                                               ort_siparis_tutari_12ay=ort_siparis_tutari_12ay,
+                                               iade_yuzdesi_1=iade_yuzdesi_1,
+                                               iade_yuzdesi_12=iade_yuzdesi_12,
+                                               ort_gecikme_gun_sayisi=ort_gecikme_gun_sayisi,
+                                               ort_gecikme_gun_bakiyesi=ort_gecikme_gun_bakiyesi,
+                                               bakiye=bakiye
+                                               )
+
+        return True
+
     @staticmethod
     def x_y_z(x, y):
         value = None
@@ -138,9 +198,6 @@ class DataSetModel(BaseModel):
         return [(i.name, i.verbose_name) for i in cls._meta.fields if i not in BaseModel._meta.fields
                 and i.verbose_name not in ('basemodel ptr',)]
 
-    def __str__(self):
-        return f"Risk Dataset: {self.musteri.firm_full_name}"
-
     def get_field_config_name(self, config_object, **kwargs):
         desired_field = kwargs.get('field')
         if desired_field not in list(self._meta.fields):
@@ -149,6 +206,9 @@ class DataSetModel(BaseModel):
         excel_field = config_object.get(source_field=desired_field)
 
         return excel_field
+
+    def __str__(self):
+        return f"Risk Dataset: {self.musteri.firm_full_name}"
 
     class Meta:
         db_table = 'RISK_DATA'
