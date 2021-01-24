@@ -73,9 +73,9 @@ class Subtypes(BaseModel):
 # Vergi SGK ıvır zıvır
 
 class BaseBlackLists(BaseModel):
-    firm_title = models.CharField(max_length=200, verbose_name='FIRM FULLNAME',
-                                  db_column='FIRM_FULLNAME', unique=False,
-                                  null=True)
+    borc_sahibi = models.CharField(unique=False,
+                                   help_text='Borçlunun Adı Soyadı',
+                                   db_column='DEPT_TITLE', max_length=150)
 
     def find_related_customers(self, customer):
         pass
@@ -85,44 +85,43 @@ class BaseBlackLists(BaseModel):
         abstract = True
 
     def __str__(self):
-        return f"Black list for : {self.firm_title}"
+        return f"Black list for : {self.borc_sahibi}"
 
 
-class SGKDebtListModel(BaseBlackLists):
-    taxpayer_number = models.CharField(unique=False, help_text='Sahis firmasi ise TCKNO, Tuzel Kisilik ise'
-                                                               'Vergi No',
-                                       db_column='TAXPAYER_NUMBER', max_length=15)
-    debt_amount = models.PositiveIntegerField(db_column='DEBT_AMOUNT', unique=False)
+class SGKBorcuListesi(BaseBlackLists):
+    kimlikno = models.CharField(unique=False, help_text='Sahis firmasi ise TCKNO, Tuzel Kisilik ise'
+                                                        'Vergi No',
+                                db_column='TAXPAYER_NUMBER', max_length=15)
+    borc_miktari = models.FloatField(unique=False,
+                                     help_text='Borç Miktarı',
+                                     db_column='DEPT_AMOUNT')
 
     class Meta:
         db_table = 'SGK_DEBTS'
 
     def __str__(self):
-        return f"SGK Debts for {self.firm_title}"
+        return f"SGK Debts for {self.borc_sahibi}"
 
 
-class TaxDebtList(BaseModel):
-    tax_department = models.CharField(max_length=200, verbose_name='TAX DEPARTMENT',
-                                      db_column='TAX_DEPT', unique=False,
-                                      help_text='Vergi Departmanı')
-    taxpayer_number = models.CharField(unique=False, help_text='Sahis firmasi ise TCKNO, Tuzel Kisilik ise'
-                                                               'Vergi No',
-                                       db_column='TAXPAYER_NUMBER', max_length=15)
-    dept_title = models.CharField(unique=False,
-                                  help_text='Borçlunun Adı Soyadı/Unvanı',
-                                  db_column='DEPT_TITLE', max_length=150)
-    real_operating_income = models.CharField(unique=False,
-                                             help_text='Esas Faaliyet Konusu',
-                                             db_column='REAL_OPERATING_INCOME', max_length=500)
-    dept_amount = models.FloatField(unique=False,
-                                    help_text='Borç Miktarı',
-                                    db_column='DEPT_AMOUNT')
+class VergiBorcuListesi(BaseBlackLists):
+    vergi_departmani = models.CharField(max_length=200, verbose_name='TAX DEPARTMENT',
+                                        db_column='TAX_DEPT', unique=False,
+                                        help_text='Vergi Departmanı')
+    kimlikno = models.CharField(unique=False, help_text='Sahis firmasi ise TCKNO, Tuzel Kisilik ise'
+                                                        'Vergi No',
+                                db_column='TAXPAYER_NUMBER', max_length=15)
+    esas_faaliyet_konusu = models.CharField(unique=False,
+                                            help_text='Esas Faaliyet Konusu',
+                                            db_column='REAL_OPERATING_INCOME', max_length=500)
+    borc_miktari = models.FloatField(unique=False,
+                                     help_text='Borç Miktarı',
+                                     db_column='DEPT_AMOUNT')
 
     class Meta:
         db_table = 'TAX_DEBTS'
 
     def __str__(self):
-        return f"Tax Debts for  {self.dept_title}"
+        return f"Tax Debts for  {self.borc_sahibi}"
 
 
 class SystemBlackList(BaseBlackLists):
