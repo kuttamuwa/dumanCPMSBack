@@ -58,7 +58,7 @@ INSTALLED_APPS = [
     'riskanalysis.controller.apps.RiskanalysisConfig',
     'appconfig',
     'checkaccount.controllers.apps.CheckaccountConfig',
-    'dashboard.controllers.apps.DashboardConfig',
+    # 'dashboard.controllers.apps.DashboardConfig',
     
     # cors
     'corsheaders',

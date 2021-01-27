@@ -185,6 +185,8 @@ class DataSetModel(BaseModel):
             if self.ort_siparis_tutari_12ay * 0.1 <= self.iade_yuzdesi_1:
                 decision = True
 
+        # todo: Bunu mıççafalara gösterirken verdik, prodda gider.
+        decision = True
         return decision
 
     def hesapla_satis_ort_sapma(self):
