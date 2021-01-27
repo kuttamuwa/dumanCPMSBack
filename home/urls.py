@@ -1,8 +1,9 @@
-from django.urls import path, include
+from django.contrib.auth import views
+from django.urls import path
 
-from home import views
+from home import views as hviews
 
 urlpatterns = [
-    path('', views.main_page, name='dcpms-main'),
-    path('login/<str:username>', views.login_system, name='dcpms-login')
+    path('', hviews.main_page, name='dcpms-main'),
+    # path('login/"<string:username><string:password>', hviews.login)
 ]
