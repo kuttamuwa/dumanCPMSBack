@@ -1,0 +1,23 @@
+appdirs==1.4.4
+asgiref @ file:///home/conda/feedstock_root/build_artifacts/asgiref_1605523041333/work
+certifi==2020.12.5
+distlib==0.3.1
+Django @ file:///home/conda/feedstock_root/build_artifacts/django_1609752033316/work
+django-cors-headers==3.6.0
+django-debug-toolbar==3.2
+django-rest-framework==0.1.0
+djangorestframework==3.12.2
+et-xmlfile==1.0.1
+jdcal==1.4.1
+numpy==1.19.5
+openpyxl==3.0.6
+pandas==1.2.0
+psycopg2==2.8.6
+python-dateutil==2.8.1
+pytz @ file:///home/conda/feedstock_root/build_artifacts/pytz_1608904108784/work
+six==1.15.0
+sqlparse @ file:///home/conda/feedstock_root/build_artifacts/sqlparse_1602142927465/work
+virtualenv==20.1.0
+virtualenvwrapper-win==1.2.6
+wincertstore==0.2
+xlrd==2.0.1
