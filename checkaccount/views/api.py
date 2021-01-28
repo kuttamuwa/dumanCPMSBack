@@ -1,5 +1,5 @@
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 
 from checkaccount.models.models import CheckAccount, SysPersonnel, Sectors, Cities, Districts
 from checkaccount.models.serializers import CheckAccountSerializer
@@ -28,7 +28,7 @@ class SysPersonnelAPI(viewsets.ModelViewSet):
     queryset = SysPersonnel.objects.all().order_by('-created_date')
     serializer_class = SysPersonnelSerializer
     permission_classes = [
-        # IsAuthenticated
+        IsAuthenticated
     ]
 
 
@@ -36,7 +36,7 @@ class SectorsAPI(viewsets.ModelViewSet):
     queryset = Sectors.objects.all().order_by('-created_date')
     serializer_class = SectorsSerializer
     permission_classes = [
-        # IsAuthenticated
+        IsAuthenticated
     ]
 
 
@@ -44,7 +44,7 @@ class CitiesAPI(viewsets.ModelViewSet):
     queryset = Cities.objects.all().order_by('name')
     serializer_class = CitySerializer
     permission_classes = [
-        # IsAuthenticatedOrReadOnly
+        IsAuthenticatedOrReadOnly
     ]
 
 
@@ -52,7 +52,7 @@ class DistrictAPI(viewsets.ModelViewSet):
     queryset = Districts.objects.all()
     serializer_class = DistrictSerializer
     permission_classes = [
-        # IsAuthenticatedOrReadOnly
+        IsAuthenticatedOrReadOnly
     ]
 
     def get_queryset(self):
