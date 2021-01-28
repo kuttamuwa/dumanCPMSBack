@@ -1,9 +1,11 @@
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 
 from checkaccount.models.models import CheckAccount, SysPersonnel, Sectors, Cities, Districts
 from checkaccount.models.serializers import CheckAccountSerializer
 from checkaccount.models.serializers import SysPersonnelSerializer, SectorsSerializer, CitySerializer, \
     DistrictSerializer
+from checkaccount.views.permissions import CheckAccountPermission
 
 
 class CheckAccountAPI(viewsets.ModelViewSet):
@@ -11,20 +13,12 @@ class CheckAccountAPI(viewsets.ModelViewSet):
     serializer_class = CheckAccountSerializer
 
     permission_classes = [
-        # IsAuthenticated,
-        # CheckAccountPermission
+        IsAuthenticated,
+        CheckAccountPermission
     ]
 
     def get_queryset(self):
         return super(CheckAccountAPI, self).get_queryset()
-
-    def handle_post_data(self, data):
-        pass
-        # data['birthplace'] =
-        # data['firm_key_contact_personnel'] =
-        # data['sector'] =
-        # data['city'] =
-        # data['district'] =
 
     def create(self, request, *args, **kwargs):
         return super(CheckAccountAPI, self).create(request, *args, **kwargs)

@@ -54,12 +54,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'avatar',
 
     'riskanalysis.controller.apps.RiskanalysisConfig',
     'appconfig',
     'checkaccount.controllers.apps.CheckaccountConfig',
     # 'dashboard.controllers.apps.DashboardConfig',
-    
+
     # cors
     'corsheaders',
     'debug_toolbar'
@@ -70,8 +71,10 @@ CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:8000',
     'http://localhost:8080',
+    'http://localhost:4200',
     'http://127.0.0.1:8000',
-    'http://127.0.0.1:8080'
+    'http://127.0.0.1:8080',
+    'http://127.0.0.1:4200',
 ]
 
 INTERNAL_IPS = [
@@ -167,5 +170,15 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'MEDIA')
 
 JWT_AUTH = {
     'JWT_ALLOW_REFRESH': True,
-    'JWT_EXPIRATION_DELTA': timedelta(days=2),
+    'JWT_EXPIRATION_DELTA': timedelta(hours=2),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'AUTH_HEADER_TYPES': ('JWT',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
 }
+

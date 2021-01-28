@@ -2,6 +2,7 @@ from django.core.files import File
 from django.core.files.storage import default_storage
 from rest_framework import viewsets, status
 from rest_framework.exceptions import APIException
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.conf import settings
 
@@ -11,13 +12,15 @@ from riskanalysis.models.serializers import RiskPointsSerializer, DatasetSeriali
 import os
 import uuid
 
+from riskanalysis.views.permissions import DatasetPermission, RiskPointsPermission
+
 
 class DatasetAPI(viewsets.ModelViewSet):
     queryset = DataSetModel.objects.all().order_by('-created_date')
     serializer_class = DatasetSerializer
 
     permission_classes = [
-        # IsAuthenticated, DatasetPermission
+        IsAuthenticated, DatasetPermission
     ]
 
     @staticmethod
@@ -71,7 +74,7 @@ class RiskPointsAPI(viewsets.ModelViewSet):
     queryset = RiskDataSetPoints.objects.all().order_by('-created_date')
     serializer_class = RiskPointsSerializer  # general serializer
     permission_classes = [
-        # IsAuthenticated, RiskPointsPermission
+        IsAuthenticated, RiskPointsPermission
     ]
 
     def __get_riskdataset(self):

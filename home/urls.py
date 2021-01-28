@@ -5,5 +5,4 @@ from home import views as hviews
 
 urlpatterns = [
     path('', hviews.main_page, name='dcpms-main'),
-    # path('login/"<string:username><string:password>', hviews.login)
 ]

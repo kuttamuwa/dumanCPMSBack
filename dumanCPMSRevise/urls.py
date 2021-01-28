@@ -37,4 +37,6 @@ urlpatterns = [
     path('checkaccount/', include('checkaccount.controllers.urls')),
     path('riskanalysis/', include('riskanalysis.controller.urls')),
     path('dashboard/', include('dashboard.controllers.urls')),
+
+    url('avatar/', include('avatar.urls')),
 ]
