@@ -1,10 +1,7 @@
 # Create your views here.
+from django.shortcuts import render
 from django.views.generic import DetailView
 
 
-class AppConfigMainView(DetailView):
-    def get(self, request, *args, **kwargs):
-        pass
-
-    def post(self, request, *args, **kwargs):
-        pass
+def app_page(request):
+    return render(request, 'main_page.html')

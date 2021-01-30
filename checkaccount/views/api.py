@@ -11,10 +11,9 @@ from checkaccount.views.permissions import CheckAccountPermission
 class CheckAccountAPI(viewsets.ModelViewSet):
     queryset = CheckAccount.objects.all().order_by('-created_date')
     serializer_class = CheckAccountSerializer
-
     permission_classes = [
-        IsAuthenticated,
-        CheckAccountPermission
+        # IsAuthenticated,
+        # CheckAccountPermission
     ]
 
     def get_queryset(self):
@@ -22,6 +21,12 @@ class CheckAccountAPI(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         return super(CheckAccountAPI, self).create(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        return super(CheckAccountAPI, self).destroy(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        return super(CheckAccountAPI, self).update(request, *args, **kwargs)
 
 
 class SysPersonnelAPI(viewsets.ModelViewSet):

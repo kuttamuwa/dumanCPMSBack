@@ -38,5 +38,5 @@ urlpatterns = [
     path('riskanalysis/', include('riskanalysis.controller.urls')),
     path('dashboard/', include('dashboard.controllers.urls')),
 
-    url('avatar/', include('avatar.urls')),
+    path(r'^avatars/', include('avatar.urls')),
 ]

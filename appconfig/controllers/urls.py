@@ -4,8 +4,8 @@ from appconfig.views import views
 from appconfig.views.routers import router
 
 urlpatterns = [
-    path('', views.AppConfigMainView.as_view(), name='appconfig-main'),
+    path('', views.app_page, name='appconfig-main'),
 
     # crud - api
-    path('api/', include(router.urls))
+    path('api/', include(router.urls)),
 ]

@@ -15,6 +15,13 @@ class CheckaccountConfig(AppConfig):
         from checkaccount.controllers.hookers import ImportPersonnels
         ImportPersonnels().test_runforme()
 
+    @staticmethod
+    def import_account_data():
+        from checkaccount.controllers.hookers import ImportAccounts
+        ImportAccounts().test_runforme()
+
     def ready(self):
         self.import_il_ilce()
         self.import_sys_personnels()
+        self.import_account_data()
+

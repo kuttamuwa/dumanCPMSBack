@@ -5,7 +5,7 @@ from appconfig.models.models import VergiBorcuListesi, SGKBorcuListesi
 
 
 class ImportExternalData:
-    folder_path = r"C:\Users\LENOVO\PycharmProjects\DumanCPMS\docs\externaldata"
+    folder_path = os.path.abspath('../data/externaldata')
     vergiborcu = "vergi_yuzsuz.xlsx"
     sgkborcu = "sgklar.xlsx"
     sektorkaraliste = "il_ilce_sektor.xlsx"

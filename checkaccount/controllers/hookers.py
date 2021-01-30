@@ -1,19 +1,30 @@
 import pandas as pd
 import os
 
-from checkaccount.models.models import Cities, Districts, SysPersonnel, SysDepartments
+from checkaccount.models.models import Cities, Districts, SysPersonnel, SysDepartments, CheckAccount
 
 
-class ImportCityDistrict:
-    folder_path = r"C:\Users\LENOVO\PycharmProjects\dumanCPMSRevise\checkaccount\tests"
-    iller = 'iller.xlsx'
-    ilceler = 'ilceler.xlsx'
+class BaseImport:
+    folder_path = os.path.abspath('./checkaccount/data')
+    data = None
 
     def read_from_excel(self):
-        ilce_excel = os.path.join(self.folder_path, self.ilceler)
-        df = pd.read_excel(ilce_excel)
+        data_excel = os.path.join(self.folder_path, self.data)
+        df = pd.read_excel(data_excel)
+        df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
 
         return df
+
+    @staticmethod
+    def _save(df):
+        raise NotImplementedError
+
+    def test_runforme(self):
+        raise NotImplementedError
+
+
+class ImportCityDistrict(BaseImport):
+    data = 'ilceler.xlsx'
 
     @staticmethod
     def _save(df):
@@ -33,15 +44,8 @@ class ImportCityDistrict:
             print("Imported city and districts")
 
 
-class ImportPersonnels:
-    folder_path = r"C:\Users\LENOVO\PycharmProjects\dumanCPMSRevise\checkaccount\tests"
-    personnels = 'personnels.xlsx'
-
-    def read_from_excel(self):
-        personel_df = os.path.join(self.folder_path, self.personnels)
-        df = pd.read_excel(personel_df)
-
-        return df
+class ImportPersonnels(BaseImport):
+    data = 'personnels.xlsx'
 
     @staticmethod
     def _save(df):
@@ -63,3 +67,21 @@ class ImportPersonnels:
             self._save(df)
 
             print("Imported sys personnels")
+
+
+class ImportAccounts(BaseImport):
+    data = 'accounts.xlsx'
+
+    @staticmethod
+    def _save(df):
+        for index, row in df.iterrows():
+            CheckAccount.objects.get_or_create(**row)
+
+        return True
+
+    def test_runforme(self):
+        if len(CheckAccount.objects.all()) == 0:
+            df = self.read_from_excel()
+            self._save(df)
+
+            print("Imported test check accounts")
