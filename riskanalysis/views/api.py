@@ -20,7 +20,7 @@ class DatasetAPI(viewsets.ModelViewSet):
     serializer_class = DatasetSerializer
 
     permission_classes = [
-        IsAuthenticated, DatasetPermission
+        # IsAuthenticated, DatasetPermission
     ]
 
     @staticmethod

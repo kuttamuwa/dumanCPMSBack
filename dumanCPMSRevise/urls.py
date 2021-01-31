@@ -13,13 +13,12 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+import debug_toolbar
 from django.contrib import admin
 from django.urls import path, include
-
-import debug_toolbar
-
 from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
+
+from appconfig.utils.perms import getperms
 
 urlpatterns = [
     path('__debug__/', include(debug_toolbar.urls)),
@@ -28,6 +27,7 @@ urlpatterns = [
     # authentication on rest framework with JWT
     path('auth/login/', obtain_jwt_token),
     path('auth/refresh-token/', refresh_jwt_token),
+    path('auth/getperms', getperms),
 
     path('', include('home.urls')),
 
@@ -37,6 +37,4 @@ urlpatterns = [
     path('checkaccount/', include('checkaccount.controllers.urls')),
     path('riskanalysis/', include('riskanalysis.controller.urls')),
     path('dashboard/', include('dashboard.controllers.urls')),
-
-    path(r'^avatars/', include('avatar.urls')),
 ]

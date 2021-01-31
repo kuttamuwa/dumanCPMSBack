@@ -12,8 +12,8 @@ class CheckAccountAPI(viewsets.ModelViewSet):
     queryset = CheckAccount.objects.all().order_by('-created_date')
     serializer_class = CheckAccountSerializer
     permission_classes = [
-        # IsAuthenticated,
-        # CheckAccountPermission
+        IsAuthenticated,
+        CheckAccountPermission
     ]
 
     def get_queryset(self):

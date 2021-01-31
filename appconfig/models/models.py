@@ -75,7 +75,7 @@ class Subtypes(BaseModel):
 class BaseBlackLists(BaseModel):
     borc_sahibi = models.CharField(unique=False,
                                    help_text='Borçlunun Adı Soyadı',
-                                   db_column='DEPT_TITLE', max_length=150)
+                                   db_column='DEPT_TITLE', max_length=150, null=True)
 
     def find_related_customers(self, customer):
         pass
