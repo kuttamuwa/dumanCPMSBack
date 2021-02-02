@@ -22,4 +22,7 @@ def get_avatar(request, username):
         except IOError:
             return HttpResponse('NOT FOUND')
 
+        except ValueError:
+            return HttpResponse('NOT FOUND')
+
     return HttpResponse("NO USERNAME")

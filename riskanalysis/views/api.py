@@ -20,7 +20,7 @@ class DatasetAPI(viewsets.ModelViewSet):
     serializer_class = DatasetSerializer
 
     permission_classes = [
-        # IsAuthenticated, DatasetPermission
+        IsAuthenticated, DatasetPermission
     ]
 
     @staticmethod
@@ -30,8 +30,11 @@ class DatasetAPI(viewsets.ModelViewSet):
     def get_queryset(self):
         self.fill_all_points()
         qset = super(DatasetAPI, self).get_queryset()
-
         return qset
+
+    def retrieve(self, request, *args, **kwargs):
+        ret = super(DatasetAPI, self).retrieve(request, *args, **kwargs)
+        return ret
 
     @staticmethod
     def handle_excel_file(file, errors, state):

@@ -2,9 +2,8 @@ import numpy as np
 import pandas as pd
 
 from appconfig.models.models import Domains, Subtypes
+from riskanalysis.models.managers import BaseAnalyze
 from riskanalysis.models.models import DataSetModel, RiskDataSetPoints
-
-
 
 
 class AnalyzingRiskDataSet(BaseAnalyze):
@@ -29,7 +28,6 @@ class AnalyzingRiskDataSet(BaseAnalyze):
 
     def get_analyzed_data(self):
         return self.analyzed_data
-
 
     def analyze_decision_based_on_latest12months_payback(self):
         """
@@ -223,5 +221,3 @@ class AnalyzingRiskDataSet(BaseAnalyze):
         else:
             # todo: logging
             return False
-
-

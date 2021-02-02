@@ -11,17 +11,14 @@ from riskanalysis.models.managers import RiskDataSetManager, AnalyzeManager
 Check Account modülü satılmayacaksa aşağıdan DummyUser olarak gösterilmesi gerekir
 
 """
-try:
-    from checkaccount.models.models import CheckAccount
 
-except ImportError:
-    from riskanalysis.adaptors.user import DummyUser as CheckAccount
+from checkaccount.models.models import CheckAccount
 
 
 class DataSetModel(BaseModel):
     objects = RiskDataSetManager()
 
-    musteri = models.ForeignKey(CheckAccount, on_delete=models.SET_NULL, verbose_name='İlişkili Müşteri',
+    musteri = models.ForeignKey(CheckAccount, on_delete=models.PROTECT, verbose_name='İlişkili Müşteri',
                                 null=True, blank=True, db_column='CUSTOMER')
 
     limit = models.PositiveIntegerField(db_column='LIMIT', null=True, verbose_name='Limit', blank=True)  # 500 0000 vs
@@ -75,6 +72,9 @@ class DataSetModel(BaseModel):
     # will be calculated later with analyzer service
     general_point = models.FloatField(verbose_name='Genel Puan', null=True, blank=True,
                                       db_column='GENERAL_POINT')
+
+    def __str__(self):
+        return f"Risk Dataset: {self.musteri}"
 
     """
     Devir günü
@@ -215,9 +215,6 @@ class DataSetModel(BaseModel):
         excel_field = config_object.get(source_field=desired_field)
 
         return excel_field
-
-    def __str__(self):
-        return f"Risk Dataset: {self.musteri.firm_full_name}"
 
     class Meta:
         db_table = 'RISK_DATA'

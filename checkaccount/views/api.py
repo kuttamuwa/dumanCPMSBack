@@ -25,7 +25,18 @@ class CheckAccountAPI(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super(CheckAccountAPI, self).destroy(request, *args, **kwargs)
 
+    @staticmethod
+    def fill_some_fields_auto(request):
+        request.POST._mutable = True
+
+        request.POST['web_url'] = 'https://cli.vuejs.org/guide/mode-and-env.html#environment-variables'
+        request.POST['email_addr'] = 'ucok.umut@gmail.com'
+
+        request.POST._mutable = False
+        return request
+
     def update(self, request, *args, **kwargs):
+        request = self.fill_some_fields_auto(request)
         return super(CheckAccountAPI, self).update(request, *args, **kwargs)
 
 

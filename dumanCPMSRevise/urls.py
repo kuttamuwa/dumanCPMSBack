@@ -16,7 +16,7 @@ Including another URLconf
 import debug_toolbar
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
+from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token, verify_jwt_token
 
 from appconfig.utils.perms import getperms
 
@@ -27,6 +27,8 @@ urlpatterns = [
     # authentication on rest framework with JWT
     path('auth/login/', obtain_jwt_token),
     path('auth/refresh-token/', refresh_jwt_token),
+    path('auth/verify-token/', verify_jwt_token),
+
     path('auth/getperms', getperms),
 
     path('', include('home.urls')),
