@@ -1,26 +1,32 @@
-from django.core.files import File
+import os
+import uuid
+
+from django.conf import settings
 from django.core.files.storage import default_storage
 from rest_framework import viewsets, status
 from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
-from django.conf import settings
 
 from appconfig.models.models import Domains
 from riskanalysis.models.models import DataSetModel, RiskDataSetPoints
-from riskanalysis.models.serializers import RiskPointsSerializer, DatasetSerializer, RiskPointsGetSerializer
-import os
-import uuid
-
+from riskanalysis.models.serializers import RiskPointsSerializer, RiskPointsGetSerializer, \
+    DatasetSerializerLimited
 from riskanalysis.views.permissions import DatasetPermission, RiskPointsPermission
+
+
+class DatasetRenderer(JSONRenderer):
+    pass
 
 
 class DatasetAPI(viewsets.ModelViewSet):
     queryset = DataSetModel.objects.all().order_by('-created_date')
-    serializer_class = DatasetSerializer
+    serializer_class = DatasetSerializerLimited
+    renderer_classes = [DatasetRenderer]
 
     permission_classes = [
-        IsAuthenticated, DatasetPermission
+        # IsAuthenticated, DatasetPermission
     ]
 
     @staticmethod
@@ -77,7 +83,7 @@ class RiskPointsAPI(viewsets.ModelViewSet):
     queryset = RiskDataSetPoints.objects.all().order_by('-created_date')
     serializer_class = RiskPointsSerializer  # general serializer
     permission_classes = [
-        IsAuthenticated, RiskPointsPermission
+        # IsAuthenticated, RiskPointsPermission
     ]
 
     def __get_riskdataset(self):
@@ -115,23 +121,31 @@ class RiskPointsAPI(viewsets.ModelViewSet):
                 RiskParamValueError(detail='Not enough data ! \n'
                                            'No primary key or dataset object was defined.')
 
-        if dataset.general_point is None or again:
-            rp = RiskDataSetPoints(risk_dataset=dataset, variable='TOPLAM')
-            analyzer = rp.analyzer(rp.risk_dataset)
-            try:
-                general_point = analyzer.analyze()
-                rp.point = general_point
-                dataset.general_point = general_point
+        if isinstance(dataset, DataSetModel):
+            if dataset.general_point is None or again:
+                rp = RiskDataSetPoints(risk_dataset=dataset, variable='TOPLAM')
+                analyzer = rp.analyzer(rp.risk_dataset)
+                try:
+                    general_point = analyzer.analyze()
+                    rp.point = general_point
+                    dataset.general_point = general_point
 
-                dataset.save()
-                rp.save()
-            except Domains.DoesNotExist:
-                return DomainDoesNotExist
+                    dataset.save()
+                    rp.save()
+                except Domains.DoesNotExist:
+                    return DomainDoesNotExist
 
-            except ValueError as err:
-                return RiskParamValueError(detail=err)
+                except ValueError as err:
+                    return RiskParamValueError(detail=err)
 
-            return general_point
+                return general_point
+            else:
+                return dataset.general_point
+
+        else:
+            return {
+                "error": dataset
+            }
 
     def create(self, request, *args, **kwargs):
         """
@@ -146,10 +160,15 @@ class RiskPointsAPI(viewsets.ModelViewSet):
             pk = int(request.query_params['riskdataset_pk'])
             again = bool(request.query_params.get('again', False))  # söylenmezse yapılmaz
 
-            point = self.analyze_data(riskdataset_pk=pk, again=again)
+            resp = self.analyze_data(riskdataset_pk=pk, again=again)
 
-            return Response(point, status=status.HTTP_200_OK)
-
+            if isinstance(resp, float):
+                return Response(resp, status=status.HTTP_200_OK)
+            else:
+                err = resp['error']
+                return Response(err.default_detail,
+                                status=err.status_code,
+                                exception=True)
         except ValueError:
             return RiskParamValueError
 

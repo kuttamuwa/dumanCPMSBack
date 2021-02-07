@@ -11,7 +11,7 @@ def app_page(request):
 
 
 def get_avatar(request, username):
-    if username != "":
+    if username not in ('', 'undefined', None):
         usr = User.objects.get(username=username)
         a = Avatar.objects.get(user=usr)
 

@@ -95,7 +95,7 @@ class DataSetModel(BaseModel):
     def _save(df):
         df.replace(np.nan, None, inplace=True)
         for index, row in df.iterrows():
-            musteri = row['Müşteri']
+            musteri = row['VKNTC']  # VKNTC
             limit = row['Limit']
 
             # teminat

@@ -6,4 +6,3 @@ router = routers.DefaultRouter()
 
 router.register(r'dataset', DatasetAPI)
 router.register(r'points', RiskPointsAPI)
-# router.register(r'pointsv2', RiskPointsAPIv2.as_view())

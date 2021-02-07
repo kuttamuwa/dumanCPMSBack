@@ -60,15 +60,15 @@ class BaseAnalyze(models.Manager):
         return pts
 
 
-def user_check(musteri, create_dummy=True):
-    if musteri is None:
+def user_check(vkntc, create_dummy=True):
+    if vkntc is None:
         if create_dummy:
             return CheckAccount.dummy_creator.create_dummy()
         else:
             raise CheckAccount.DoesNotExist
     else:
-        musteri = CheckAccount.objects.get_or_create(firm_full_name=musteri)
-        return musteri[0]
+        vkntc = CheckAccount.objects.get_or_create(taxpayer_number=vkntc)
+        return vkntc[0]
 
 
 class RiskDataSetManager(models.Manager):
@@ -84,7 +84,7 @@ class RiskDataSetManager(models.Manager):
         return teminat_durumu
 
     def create(self, *args, **kwargs):
-        kwargs['musteri'] = user_check(musteri=kwargs.get('musteri'))
+        kwargs['musteri'] = user_check(vkntc=kwargs.get('vkntc'))
         kwargs['teminat_durumu'] = self.teminat_check(kwargs.get('teminat_durumu'), kwargs.get('teminat_tutari'))
 
         return super(RiskDataSetManager, self).create(*args, **kwargs)
@@ -97,7 +97,7 @@ class RiskDataSetManager(models.Manager):
         return args, kwargs
 
     def get_or_create(self, *args, **kwargs):
-        kwargs['musteri'] = user_check(musteri=kwargs.get('musteri'))
+        kwargs['musteri'] = user_check(vkntc=kwargs.get('musteri'))
         kwargs['teminat_durumu'] = self.teminat_check(kwargs.get('teminat_durumu'), kwargs.get('teminat_tutari'))
 
         args, kwargs = self.__nan_to_none(args, kwargs)

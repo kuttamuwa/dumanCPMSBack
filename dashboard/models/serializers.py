@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from riskanalysis.models.models import DataSetModel, RiskDataSetPoints
+from riskanalysis.models.models import DataSetModel
 
 
 class DatasetSerializerGeneral(serializers.ModelSerializer):
@@ -16,21 +16,3 @@ class DatasetSerializerLimited(serializers.ModelSerializer):
     class Meta:
         model = DataSetModel
         fields = ('data_id', 'firm_full_name', 'general_point', 'taxpayer_number')
-
-
-class RiskPointsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RiskDataSetPoints
-        fields = '__all__'
-
-
-class RiskPointsGetSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RiskDataSetPoints
-        fields = ('risk_dataset', 'point', 'data_id')
-
-
-class RiskPointsPostSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RiskDataSetPoints
-        fields = ('risk_dataset',)

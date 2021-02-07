@@ -1,7 +1,6 @@
 from rest_framework import viewsets
 
-from riskanalysis.models.models import DataSetModel
-from riskanalysis.models.serializers import DatasetSerializer
+from dashboard.models.serializers import DatasetSerializerLimited, DatasetSerializerGeneral, DataSetModel
 
 
 class RiskAnalysisApi(viewsets.ReadOnlyModelViewSet):
@@ -33,7 +32,7 @@ class RiskAnalysisApi(viewsets.ReadOnlyModelViewSet):
 
     """
     queryset = DataSetModel.objects.all()
-    serializer_class = DatasetSerializer
+    serializer_class = DatasetSerializerLimited
 
     def get_queryset(self):
         print("istek geldi")
