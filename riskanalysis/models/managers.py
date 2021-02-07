@@ -5,16 +5,7 @@ from appconfig.models.models import Domains, Subtypes
 from riskanalysis.errors.analyze import *
 from riskanalysis.errors.validators import WarrantAmountConflictError, BalanceError, NoImplementedParameter
 
-"""
-:exception: Şu anda Customer sütunu CheckAccount üzerinden gelmektedir. 
-Check Account modülü satılmayacaksa aşağıdan DummyUser olarak gösterilmesi gerekir
-
-"""
-try:
-    from checkaccount.models.models import CheckAccount
-
-except ImportError:
-    from riskanalysis.adaptors.user import DummyUser as CheckAccount
+from checkaccount.models.models import CheckAccount
 
 import pandas as pd
 import numpy as np
@@ -69,16 +60,18 @@ class BaseAnalyze(models.Manager):
         return pts
 
 
-class RiskDataSetManager(models.Manager):
-    def user_check(self, musteri, create_dummy=True):
-        if musteri is None:
-            if create_dummy:
-                return CheckAccount.dummy_creator.create_dummy()
-            else:
-                raise CheckAccount.DoesNotExist
+def user_check(musteri, create_dummy=True):
+    if musteri is None:
+        if create_dummy:
+            return CheckAccount.dummy_creator.create_dummy()
         else:
-            musteri = CheckAccount.objects.get_or_create(firm_full_name=musteri)
-            return musteri[0]
+            raise CheckAccount.DoesNotExist
+    else:
+        musteri = CheckAccount.objects.get_or_create(firm_full_name=musteri)
+        return musteri[0]
+
+
+class RiskDataSetManager(models.Manager):
 
     @staticmethod
     def teminat_check(teminat_durumu, teminat_tutari):
@@ -91,7 +84,7 @@ class RiskDataSetManager(models.Manager):
         return teminat_durumu
 
     def create(self, *args, **kwargs):
-        kwargs['musteri'] = self.user_check(musteri=kwargs.get('musteri'))
+        kwargs['musteri'] = user_check(musteri=kwargs.get('musteri'))
         kwargs['teminat_durumu'] = self.teminat_check(kwargs.get('teminat_durumu'), kwargs.get('teminat_tutari'))
 
         return super(RiskDataSetManager, self).create(*args, **kwargs)
@@ -104,7 +97,7 @@ class RiskDataSetManager(models.Manager):
         return args, kwargs
 
     def get_or_create(self, *args, **kwargs):
-        kwargs['musteri'] = self.user_check(musteri=kwargs.get('musteri'))
+        kwargs['musteri'] = user_check(musteri=kwargs.get('musteri'))
         kwargs['teminat_durumu'] = self.teminat_check(kwargs.get('teminat_durumu'), kwargs.get('teminat_tutari'))
 
         args, kwargs = self.__nan_to_none(args, kwargs)

@@ -6,11 +6,6 @@ from riskanalysis.errors.validators import BalanceError, NoImplementedParameter
 from riskanalysis.models.basemodels import BaseModel
 from riskanalysis.models.managers import RiskDataSetManager, AnalyzeManager
 
-"""
-:exception: Şu anda Customer sütunu CheckAccount üzerinden gelmektedir. 
-Check Account modülü satılmayacaksa aşağıdan DummyUser olarak gösterilmesi gerekir
-
-"""
 
 from checkaccount.models.models import CheckAccount
 
