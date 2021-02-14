@@ -84,7 +84,7 @@ class RiskDataSetManager(models.Manager):
         return teminat_durumu
 
     def create(self, *args, **kwargs):
-        kwargs['musteri'] = user_check(vkntc=kwargs.get('vkntc'))
+        kwargs['musteri'] = user_check(vkntc=kwargs.get('VKNTC'))
         kwargs['teminat_durumu'] = self.teminat_check(kwargs.get('teminat_durumu'), kwargs.get('teminat_tutari'))
 
         return super(RiskDataSetManager, self).create(*args, **kwargs)

@@ -10,6 +10,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
 from appconfig.models.models import Domains
+from checkaccount.models.models import CheckAccount
 from riskanalysis.models.models import DataSetModel, RiskDataSetPoints
 from riskanalysis.models.serializers import RiskPointsSerializer, RiskPointsGetSerializer, \
     DatasetSerializerLimited
@@ -107,8 +108,9 @@ class RiskPointsAPI(viewsets.ModelViewSet):
         return qset
 
     def analyze_all(self, again=False):
-        for rd in DataSetModel.objects.all():
-            self.analyze_data(rd.pk, again=again)
+        if len(DataSetModel.objects.all()) != 0:
+            for rd in DataSetModel.objects.all():
+                self.analyze_data(rd.pk, again=again)
 
     def analyze_data(self, riskdataset_pk, **kwargs):
         dataset = kwargs.get('riskdataset')

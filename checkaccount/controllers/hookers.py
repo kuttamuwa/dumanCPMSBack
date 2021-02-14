@@ -2,6 +2,7 @@ import pandas as pd
 import os
 
 from checkaccount.models.models import Cities, Districts, SysPersonnel, SysDepartments, CheckAccount
+from dumanCPMSRevise.settings import APPDEBUGTESTSTATE
 
 
 class BaseImport:
@@ -77,11 +78,10 @@ class ImportAccounts(BaseImport):
         for index, row in df.iterrows():
             CheckAccount.objects.get_or_create(**row)
 
-        return True
-
     def test_runforme(self):
-        if len(CheckAccount.objects.all()) == 0:
-            df = self.read_from_excel()
-            self._save(df)
+        if APPDEBUGTESTSTATE:
+            if len(CheckAccount.objects.all()) == 0:
+                df = self.read_from_excel()
+                self._save(df)
 
-            print("Imported test check accounts")
+                print("Imported test check accounts")

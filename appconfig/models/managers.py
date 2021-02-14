@@ -36,7 +36,10 @@ class DummyCreator(models.Manager):
         default_value = self.model.firm_full_name.field.default
 
         if max_value is None:
-            max_value = self.model.objects.all().last().pk + 1
+            if len(self.model.objects.all()) == 0:
+                max_value = 0
+            else:
+                max_value = self.model.objects.all().last().pk + 1
 
         username = default_value + f"_{max_value}"
 

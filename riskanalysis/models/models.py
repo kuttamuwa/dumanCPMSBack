@@ -6,7 +6,6 @@ from riskanalysis.errors.validators import BalanceError, NoImplementedParameter
 from riskanalysis.models.basemodels import BaseModel
 from riskanalysis.models.managers import RiskDataSetManager, AnalyzeManager
 
-
 from checkaccount.models.models import CheckAccount
 
 
@@ -95,7 +94,7 @@ class DataSetModel(BaseModel):
     def _save(df):
         df.replace(np.nan, None, inplace=True)
         for index, row in df.iterrows():
-            musteri = row['VKNTC']  # VKNTC
+            musteri = int(row['VKNTC'])  # VKNTC
             limit = row['Limit']
 
             # teminat

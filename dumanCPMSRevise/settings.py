@@ -181,3 +181,5 @@ JWT_AUTH = {
     'TOKEN_TYPE_CLAIM': 'token_type',
 }
 
+APPDEBUGTESTSTATE = False
+

@@ -6,6 +6,7 @@ from checkaccount.models.serializers import CheckAccountSerializer
 from checkaccount.models.serializers import SysPersonnelSerializer, SectorsSerializer, CitySerializer, \
     DistrictSerializer
 from checkaccount.views.permissions import CheckAccountPermission
+from riskanalysis.models.models import DataSetModel
 
 
 class CheckAccountAPI(viewsets.ModelViewSet):

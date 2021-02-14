@@ -1,10 +1,12 @@
+import os
 from unittest import TestCase
 
 import numpy as np
 import pandas as pd
-import os
 
+from dumanCPMSRevise.settings import APPDEBUGTESTSTATE
 from riskanalysis.models.models import DataSetModel
+
 
 
 class RiskDatasetTests(TestCase):
@@ -62,8 +64,9 @@ class RiskDatasetTests(TestCase):
         return True
 
     def test_runforme(self):
-        if len(DataSetModel.objects.all()) == 0:
-            df = self.read_from_excel()
-            self._save(df)
+        if APPDEBUGTESTSTATE:
+            if len(DataSetModel.objects.all()) == 0:
+                df = self.read_from_excel()
+                self._save(df)
 
-            print("Imported risk datasets")
+                print("Imported risk datasets")

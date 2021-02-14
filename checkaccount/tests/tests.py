@@ -1,12 +1,9 @@
-import os
-from abc import ABC
-
-import pandas as pd
+from django.test import TestCase
 
 from django.test import TestCase
 
 from checkaccount.controllers.hookers import ImportCityDistrict
-from checkaccount.models.models import SysDepartments, SysPersonnel, Cities, Districts, CheckAccount, Sectors
+from checkaccount.models.models import SysDepartments, SysPersonnel, Sectors
 
 
 class CityDistrictsTest(TestCase):

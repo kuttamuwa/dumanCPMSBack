@@ -4,7 +4,7 @@ from dashboard.views.api import RiskAnalysisApi
 
 router = routers.DefaultRouter()
 
-# router.register(r'rd', RiskAnalysisApi)
+# router.register(r'dashrisk', RiskAnalysisApi)
 
 # router.register(r'^api/ext', ExternalDataApi, basename='external')
 
