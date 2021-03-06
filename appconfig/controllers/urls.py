@@ -9,6 +9,6 @@ urlpatterns = [
     # crud - api
     path('api/', include(router.urls)),
 
-    path('avatars/', include('avatar.urls')),
-    path('getavatar/<str:username>', views.get_avatar, name='get-avatar')
+    # path('avatars/', include('avatar.urls')),
+    # path('getavatar/<str:username>', views.get_avatar, name='get-avatar')
 ]

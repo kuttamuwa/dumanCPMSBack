@@ -1,0 +1,20 @@
+div[mat-dialog-content] {
+    display: flex;
+    flex-direction: column;
+}
+
+mat-icon {
+    cursor: pointer;
+}
+
+mat-form-field {
+    width: 100%;
+}
+
+mat-label {
+    color: white;
+}
+
+::ng-deep.mat-form-field-ripple {
+    background-color: white !important;;
+}

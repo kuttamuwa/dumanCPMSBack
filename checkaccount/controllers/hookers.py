@@ -38,11 +38,11 @@ class ImportCityDistrict(BaseImport):
         return True
 
     def test_runforme(self):
-        if len(Districts.objects.all()) == 0:
-            df = self.read_from_excel()
-            self._save(df)
+        # if len(Districts.objects.all()) == 0:
+        df = self.read_from_excel()
+        self._save(df)
 
-            print("Imported city and districts")
+        print("Imported city and districts")
 
 
 class ImportPersonnels(BaseImport):
@@ -79,9 +79,8 @@ class ImportAccounts(BaseImport):
             CheckAccount.objects.get_or_create(**row)
 
     def test_runforme(self):
-        if APPDEBUGTESTSTATE:
-            if len(CheckAccount.objects.all()) == 0:
-                df = self.read_from_excel()
-                self._save(df)
+        if len(CheckAccount.objects.all()) == 0:
+            df = self.read_from_excel()
+            self._save(df)
 
-                print("Imported test check accounts")
+            print("Imported test check accounts")

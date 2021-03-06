@@ -54,7 +54,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
-    'avatar',
 
     'riskanalysis.controller.apps.RiskanalysisConfig',
     'appconfig',
@@ -103,15 +102,10 @@ WSGI_APPLICATION = 'dumanCPMSRevise.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ismaildb',
-        'USER': 'postgres',
-        'PASSWORD': 'figo1190',
-        'HOST': 'localhost',
-        'PORT': 5432,
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': r"/Users/nazimaniltepe/Documents/Repositories/dumanCPMSBack/dcpmsapp.sqlite3",
     }
 }
 
