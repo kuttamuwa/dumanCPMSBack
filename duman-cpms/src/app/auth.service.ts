@@ -46,6 +46,7 @@ export class AuthService {
   logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('expires_at');
+    localStorage.removeItem('username');
     AppState.username = undefined;
     this.router.navigate(['login']);
   }

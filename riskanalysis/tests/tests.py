@@ -9,8 +9,8 @@ from riskanalysis.models.models import DataSetModel
 
 
 
-class RiskDatasetTests(TestCase):
-    folder_path = r"C:\Users\LENOVO\PycharmProjects\dumanCPMSRevise\riskanalysis\data"
+class RiskDatasetTests():
+    folder_path = r"/Users/nazimaniltepe/Documents/Repositories/dumanCPMSBack/riskanalysis/data"
     personnels = 'OrnekMPYSTurkcev2.xlsx'
 
     def read_from_excel(self):
@@ -64,9 +64,14 @@ class RiskDatasetTests(TestCase):
         return True
 
     def test_runforme(self):
-        if APPDEBUGTESTSTATE:
-            if len(DataSetModel.objects.all()) == 0:
-                df = self.read_from_excel()
-                self._save(df)
+        # if APPDEBUGTESTSTATE:
+        print("Risk dataseti yukleyelim")
+        #if len(DataSetModel.objects.all()) == 0:
+        df = self.read_from_excel()
+        self._save(df)
 
-                print("Imported risk datasets")
+        print("Imported risk datasets")
+
+
+
+RiskDatasetTests().test_runforme()
