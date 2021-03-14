@@ -1,8 +1,8 @@
-import pandas as pd
 import os
 
+import pandas as pd
+
 from checkaccount.models.models import Cities, Districts, SysPersonnel, SysDepartments, CheckAccount
-from dumanCPMSRevise.settings import APPDEBUGTESTSTATE
 
 
 class BaseImport:
@@ -38,11 +38,11 @@ class ImportCityDistrict(BaseImport):
         return True
 
     def test_runforme(self):
-        # if len(Districts.objects.all()) == 0:
-        df = self.read_from_excel()
-        self._save(df)
+        if len(Districts.objects.all()) == 0:
+            df = self.read_from_excel()
+            self._save(df)
 
-        print("Imported city and districts")
+            print("Imported city and districts")
 
 
 class ImportPersonnels(BaseImport):

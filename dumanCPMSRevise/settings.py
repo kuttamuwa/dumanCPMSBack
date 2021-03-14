@@ -56,7 +56,7 @@ INSTALLED_APPS = [
     'rest_framework',
 
     'riskanalysis.controller.apps.RiskanalysisConfig',
-    'appconfig',
+    # 'appconfig.controllers.apps.AppconfigConfig',
     'checkaccount.controllers.apps.CheckaccountConfig',
     # 'dashboard.controllers.apps.DashboardConfig',
 
@@ -105,7 +105,7 @@ WSGI_APPLICATION = 'dumanCPMSRevise.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': r"/Users/nazimaniltepe/Documents/Repositories/dumanCPMSBack/dcpmsapp.sqlite3",
+        'NAME': os.path.join(BASE_DIR, 'dcpmsapp.sqlite3'),
     }
 }
 
@@ -174,6 +174,4 @@ JWT_AUTH = {
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
 }
-
-APPDEBUGTESTSTATE = False
 
