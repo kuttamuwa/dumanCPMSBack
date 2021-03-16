@@ -4,7 +4,7 @@ from unittest import TestCase
 import numpy as np
 import pandas as pd
 
-from dumanCPMSRevise.settings import BASE_DIR
+from dumanCPMSRevise.settings import BASE_DIR, DEBUG
 from riskanalysis.models.models import DataSetModel
 
 
@@ -63,9 +63,10 @@ class RiskDatasetTests(TestCase):
         return True
 
     def test_runforme(self):
-        print("Risk dataseti yukleyelim")
-        if len(DataSetModel.objects.all()) == 0:
-            df = self.read_from_excel()
-            self._save(df)
+        if not DEBUG:
+            print("Risk dataseti yukleyelim")
+            if len(DataSetModel.objects.all()) == 0:
+                df = self.read_from_excel()
+                self._save(df)
 
-            print("Imported risk datasets")
+                print("Imported risk datasets")

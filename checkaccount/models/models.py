@@ -1,8 +1,8 @@
 from django.db import models
 
-from appconfig.models.managers import DummyCheckAccountCreator
 from .basemodels import BaseModel
 from .fields import DumanModelFileField
+from .managers import DummyCheckAccountCreator
 
 
 class Cities(BaseModel):

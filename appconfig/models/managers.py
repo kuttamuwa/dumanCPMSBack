@@ -2,6 +2,16 @@ from django.db import models
 
 from appconfig.errors.domain.validator import DomainCannotExceeds100
 from appconfig.errors.subtype.validator import SubtypeCannotExceeds100
+from checkaccount.models.models import CheckAccount
+
+
+class VergiBorcuManager(models.Manager):
+    def get_or_create(self, *args, **kwargs):
+        # kwargs['borc_sahibi'] = CheckAccount.dummy_creator.check_or_create_dummy(kwargs['borc_sahibi'])
+        return super(VergiBorcuManager, self).get_or_create(*args, **kwargs)
+
+    def create(self, *args, **kwargs):
+        return super(VergiBorcuManager, self).create(*args, **kwargs)
 
 
 class PuantageCreateManager(models.Manager):
@@ -28,30 +38,3 @@ class DomainCreateManager(PuantageCreateManager):
 class SubtypeCreateManager(PuantageCreateManager):
     def _get_cannot_exceeds_exception(self):
         return SubtypeCannotExceeds100
-
-
-class DummyCreator(models.Manager):
-    def generate_dummy_username(self, **kwargs):
-        max_value = kwargs.get('number')
-        default_value = self.model.firm_full_name.field.default
-
-        if max_value is None:
-            if len(self.model.objects.all()) == 0:
-                max_value = 0
-            else:
-                max_value = self.model.objects.all().last().pk + 1
-
-        username = default_value + f"_{max_value}"
-
-        return username
-
-    def create_dummy(self, username=None, **kwargs):
-        if username is None:
-            username = self.generate_dummy_username(**kwargs)
-
-        return self.create(firm_full_name=username)
-
-
-class DummyCheckAccountCreator(DummyCreator):
-    pass
-

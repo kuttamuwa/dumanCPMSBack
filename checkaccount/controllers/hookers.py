@@ -3,6 +3,7 @@ import os
 import pandas as pd
 
 from checkaccount.models.models import Cities, Districts, SysPersonnel, SysDepartments, CheckAccount
+from dumanCPMSRevise.settings import DEBUG
 
 
 class BaseImport:
@@ -38,11 +39,12 @@ class ImportCityDistrict(BaseImport):
         return True
 
     def test_runforme(self):
-        if len(Districts.objects.all()) == 0:
-            df = self.read_from_excel()
-            self._save(df)
+        if not DEBUG:
+            if len(Districts.objects.all()) == 0:
+                df = self.read_from_excel()
+                self._save(df)
 
-            print("Imported city and districts")
+                print("Imported city and districts")
 
 
 class ImportPersonnels(BaseImport):
@@ -63,11 +65,12 @@ class ImportPersonnels(BaseImport):
         return True
 
     def test_runforme(self):
-        if len(SysPersonnel.objects.all()) == 0:
-            df = self.read_from_excel()
-            self._save(df)
+        if not DEBUG:
+            if len(SysPersonnel.objects.all()) == 0:
+                df = self.read_from_excel()
+                self._save(df)
 
-            print("Imported sys personnels")
+                print("Imported sys personnels")
 
 
 class ImportAccounts(BaseImport):
@@ -76,11 +79,12 @@ class ImportAccounts(BaseImport):
     @staticmethod
     def _save(df):
         for index, row in df.iterrows():
-            CheckAccount.objects.get_or_create(**row)
+            CheckAccount.objects.get_or_create(**dict(row))
 
     def test_runforme(self):
-        if len(CheckAccount.objects.all()) == 0:
-            df = self.read_from_excel()
-            self._save(df)
+        if not DEBUG:
+            if len(CheckAccount.objects.all()) == 0:
+                df = self.read_from_excel()
+                self._save(df)
 
-            print("Imported test check accounts")
+                print("Imported test check accounts")

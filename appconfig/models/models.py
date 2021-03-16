@@ -5,9 +5,11 @@ from django.db import models
 
 from appconfig.models.basemodels import BaseModel
 
-
 # Create your models here.
 # Puantage #
+from appconfig.models.managers import VergiBorcuManager
+from checkaccount.models.models import CheckAccount
+
 
 class Domains(BaseModel):
     name = models.CharField(db_column='DOMAIN', max_length=100, unique=True, null=False)
@@ -77,8 +79,9 @@ class BaseBlackLists(BaseModel):
                                    help_text='Borçlunun Adı Soyadı',
                                    db_column='DEPT_TITLE', max_length=150, null=True)
 
-    def find_related_customers(self, customer):
-        pass
+    # borc_sahibi = models.CharField(unique=False,
+    #                                help_text='Borçlunun Adı Soyadı',
+    #                                db_column='DEPT_TITLE', max_length=150, null=True)
 
     class Meta:
         db_table = 'BLACK_LIST'
@@ -107,15 +110,15 @@ class VergiBorcuListesi(BaseBlackLists):
     vergi_departmani = models.CharField(max_length=200, verbose_name='TAX DEPARTMENT',
                                         db_column='TAX_DEPT', unique=False,
                                         help_text='Vergi Departmanı')
-    kimlikno = models.CharField(unique=False, help_text='Sahis firmasi ise TCKNO, Tuzel Kisilik ise'
-                                                        'Vergi No',
-                                db_column='TAXPAYER_NUMBER', max_length=15)
     esas_faaliyet_konusu = models.CharField(unique=False,
                                             help_text='Esas Faaliyet Konusu',
                                             db_column='REAL_OPERATING_INCOME', max_length=500)
     borc_miktari = models.FloatField(unique=False,
                                      help_text='Borç Miktarı',
                                      db_column='DEPT_AMOUNT')
+    borc_sahibi = models.ForeignKey(CheckAccount, on_delete=models.CASCADE)
+
+    objects = VergiBorcuManager()
 
     class Meta:
         db_table = 'TAX_DEBTS'
@@ -128,9 +131,6 @@ class SystemBlackList(BaseBlackLists):
     class Meta:
         db_table = 'SYS_BLACK_LIST'
 
-    def find_related_customers(self, customer):
-        pass
-
     def __str__(self):
         return 'System Black List'
 
@@ -138,9 +138,6 @@ class SystemBlackList(BaseBlackLists):
 class KonkordatoList(BaseBlackLists):
     class Meta:
         db_table = 'KONKORDATO_LIST'
-
-    def find_related_customers(self, customer):
-        pass
 
     def __str__(self):
         return 'Konkordato Black List'
