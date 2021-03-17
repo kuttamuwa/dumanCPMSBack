@@ -1,4 +1,4 @@
-from avatar.models import Avatar
+#from avatar.models import Avatar
 from rest_framework import serializers
 
 from appconfig.models.models import Domains, Subtypes
@@ -16,7 +16,3 @@ class SubtypeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class AvatarSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Avatar
-        fields = '__all__'

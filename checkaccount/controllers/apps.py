@@ -21,6 +21,7 @@ class CheckaccountConfig(AppConfig):
         ImportAccounts().test_runforme()
 
     def ready(self):
+        #pass
         self.import_il_ilce()
         self.import_sys_personnels()
         self.import_account_data()

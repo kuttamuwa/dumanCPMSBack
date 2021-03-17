@@ -1,0 +1,40 @@
+<mat-toolbar color="secondary">
+    <mat-toolbar-row>
+      <span>
+        <img src="../assets/dumanlogo.png"/>
+      </span>
+      <span>&emsp;360 Müşteri Performans Yönetim Platformu</span>
+      <span style="flex: 1 1 auto;"></span>
+      <mat-icon class="toolbar-person" (click)="PersonIconOnClick()">person</mat-icon>
+      <mat-card class="toolbar-person-card" #personCard>
+        <mat-card-content>
+          <p>{{ AppState.username }}</p>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-raised-button color="warn" (click)="LogoutButtonOnClick()">Çıkış Yap</button>
+        </mat-card-actions>
+      </mat-card>
+    </mat-toolbar-row>
+  </mat-toolbar>
+  
+  <mat-drawer-container>
+    <mat-drawer mode="side" [opened]="true" [disableClose]="true">
+      <mat-nav-list>
+        <a mat-list-item routerLink="checkaccount" routerLinkActive="a-active" text-attr="Cari Hesap">
+          <mat-icon>account_balance_wallet</mat-icon>
+        </a>
+        <a mat-list-item routerLink="riskanalysis" routerLinkActive="a-active" text-attr="Risk Analiz">
+          <mat-icon>query_stats</mat-icon>
+        </a>
+        <a mat-list-item routerLink="about" routerLinkActive="a-active" text-attr="Hakkında">
+          <mat-icon>help</mat-icon>
+        </a>
+        <a mat-list-item routerLink="config" routerLinkActive="a-active" text-attr="Yönetim Paneli">
+          <mat-icon>settings</mat-icon>
+        </a>
+      </mat-nav-list>
+    </mat-drawer>
+    <mat-drawer-content>
+      <router-outlet></router-outlet>
+    </mat-drawer-content>
+  </mat-drawer-container>

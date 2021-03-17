@@ -4,13 +4,12 @@ from unittest import TestCase
 import numpy as np
 import pandas as pd
 
-from dumanCPMSRevise.settings import APPDEBUGTESTSTATE
+from dumanCPMSRevise.settings import BASE_DIR, DEBUG
 from riskanalysis.models.models import DataSetModel
 
 
-
 class RiskDatasetTests(TestCase):
-    folder_path = r"C:\Users\LENOVO\PycharmProjects\dumanCPMSRevise\riskanalysis\data"
+    folder_path = os.path.join(BASE_DIR, 'riskanalysis', 'data')
     personnels = 'OrnekMPYSTurkcev2.xlsx'
 
     def read_from_excel(self):
@@ -64,7 +63,8 @@ class RiskDatasetTests(TestCase):
         return True
 
     def test_runforme(self):
-        if APPDEBUGTESTSTATE:
+        if not DEBUG:
+            print("Risk dataseti yukleyelim")
             if len(DataSetModel.objects.all()) == 0:
                 df = self.read_from_excel()
                 self._save(df)

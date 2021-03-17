@@ -1,0 +1,50 @@
+<div mat-dialog-content *ngIf="data.type == AccountDialogType.Create || data.type == AccountDialogType.Edit" style="display:flex; flex-direction:column;">
+    <h2>{{data.text}}</h2>
+    <mat-form-field appearance="standard">
+        <mat-label>Firma Adı</mat-label>
+        <input matInput [formControl]="firmaAdi" [value]="firmaAdi.value" spellcheck="false"/>
+        <mat-error *ngIf="firmaAdi.invalid">Firma adı giriniz.</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="standard">
+        <mat-label>Firma Tipi</mat-label>
+        <mat-select required [value]="firmaTipi.value">
+            <mat-option value="Tüzel Kişilik">Tüzel Kişilik</mat-option>
+            <mat-option value="Şahıs İşletmesi">Şahıs İşletmesi</mat-option>
+        </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="standard">
+        <mat-label>Kimlik/Vergi No.</mat-label>
+        <input matInput [formControl]="kimlikNo" [value]="kimlikNo.value" type="number"/>
+        <mat-error *ngIf="kimlikNo.invalid">Kimlik/Vergi No. giriniz.</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="standard">
+        <mat-label>Doğum Yeri</mat-label>
+        <input matInput [formControl]="dyeri" [value]="dyeri.value"/>
+    </mat-form-field>
+    <mat-form-field appearance="standard">
+        <mat-label>İl</mat-label>
+        <mat-select [formControl]="city" [(value)]="city.value" (selectionChange)="cityOnSelectionChange($event)">
+            <mat-option *ngFor="let city_ of AppState.cities" [value]="city_">{{city_}}</mat-option>
+        </mat-select>
+        <mat-error *ngIf="city.invalid">İl seçiniz.</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="standard">
+        <mat-label>İlçe</mat-label>
+        <mat-select [formControl]="district" [(value)]="district.value">
+            <mat-option *ngFor="let district_ of districts" [value]="district_">{{district_}}</mat-option>
+        </mat-select>
+        <mat-error *ngIf="city.invalid">İlçe seçiniz.</mat-error>
+    </mat-form-field>
+</div>
+<div mat-dialog-actions align="end" *ngIf="data.type == AccountDialogType.Create || data.type == AccountDialogType.Edit">
+    <button mat-raised-button color="primary">{{data.type == AccountDialogType.Create ? 'Aç' : 'Düzenle'}}</button>
+    <button mat-raised-button color="accent">İptal</button>
+</div>
+
+<div mat-dialog-content *ngIf="data.type == AccountDialogType.Delete">
+    <h2>{{data.text}}</h2>
+</div>
+<div mat-dialog-actions align="end" *ngIf="data.type == AccountDialogType.Delete">
+    <button mat-raised-button color="accent">Devam</button>
+    <button mat-raised-button cdkFocusInitial color="primary">İptal</button>
+</div>

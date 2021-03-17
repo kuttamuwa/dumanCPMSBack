@@ -18,4 +18,5 @@ class AppconfigConfig(AppConfig):
             print("Vergi SGK vs. henüz yüklenemedi. Modül tam değil")
 
     def ready(self):
-        self.import_all_external_data()
+        pass
+        # self.import_all_external_data()
