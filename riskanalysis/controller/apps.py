@@ -1,5 +1,7 @@
 from django.apps import AppConfig
 
+from dumanCPMSRevise.settings import DEBUG
+
 
 class RiskanalysisConfig(AppConfig):
     name = 'riskanalysis'
@@ -10,4 +12,5 @@ class RiskanalysisConfig(AppConfig):
         RiskDatasetTests().test_runforme()
 
     def ready(self):
-        self.import_test_data()
+        if not DEBUG:
+            self.import_test_data()
