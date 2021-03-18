@@ -25,7 +25,7 @@ SECRET_KEY = 'd_hy!@)01pkm38_tgq$r_n&yyxft%1$7#r8iih5$!gnnjj_=wj'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '51.195.210.249']
 
 # Application definition
 
@@ -74,10 +74,10 @@ CORS_ORIGIN_WHITELIST = [
     'http://127.0.0.1:8080',
 ]
 
-INTERNAL_IPS = [
-    '127.0.0.1',
-    'localhost'
-]
+# INTERNAL_IPS = [
+#     '127.0.0.1',
+#     'localhost'
+# ]
 
 ROOT_URLCONF = 'dumanCPMSRevise.urls'
 
