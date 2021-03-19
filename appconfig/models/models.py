@@ -9,6 +9,7 @@ from appconfig.models.basemodels import BaseModel
 # Puantage #
 from appconfig.models.managers import VergiBorcuManager
 from checkaccount.models.models import CheckAccount
+from dumanCPMSRevise.settings import BASE_DIR
 
 
 class Domains(BaseModel):
@@ -19,7 +20,7 @@ class Domains(BaseModel):
 
     @staticmethod
     def import_from_excel():
-        path = os.path.abspath(r'.\appconfig\data\Domains.xlsx')
+        path = os.path.join(BASE_DIR, 'appconfig', 'data', 'Domains.xlsx')
         df = pd.read_excel(path)
 
         for index, row in df.iterrows():
