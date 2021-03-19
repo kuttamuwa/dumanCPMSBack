@@ -75,10 +75,10 @@ CORS_ORIGIN_WHITELIST = [
     'http://51.195.210.249:8000'
 ]
 
-INTERNAL_IPS = [
-    '127.0.0.1',
-    'localhost'
-]
+# INTERNAL_IPS = [
+#     '127.0.0.1',
+#     'localhost'
+# ]
 
 SECURE_SSL_REDIRECT = False
 
