@@ -2,4 +2,5 @@
 /checkaccount/migrations/
 /appconfig/migrations/
 /dashboard/migrations/
+/dumanCPMSRevise/settings.py
 #/dumanCPMSRevise/settings.py
