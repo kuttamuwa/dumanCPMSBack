@@ -23,7 +23,7 @@ class DatasetRenderer(JSONRenderer):
 class DatasetAPI(viewsets.ModelViewSet):
     queryset = DataSetModel.objects.all().order_by('-created_date')
     serializer_class = DatasetSerializerGeneral
-    renderer_classes = [DatasetRenderer]
+    # renderer_classes = [DatasetRenderer]
 
     permission_classes = [
         # IsAuthenticated,
