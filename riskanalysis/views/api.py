@@ -26,8 +26,8 @@ class DatasetAPI(viewsets.ModelViewSet):
     # renderer_classes = [DatasetRenderer]
 
     permission_classes = [
-        # IsAuthenticated,
-        # DatasetPermission
+        IsAuthenticated,
+        DatasetPermission
     ]
 
     @staticmethod
