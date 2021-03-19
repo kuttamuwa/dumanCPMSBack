@@ -2,7 +2,7 @@ import pandas as pd
 import os
 
 from appconfig.models.models import VergiBorcuListesi, SGKBorcuListesi
-from dumanCPMSRevise.settings import BASE_DIR
+from dumanCPMSRevise.settings import BASE_DIR, DEBUG
 
 
 class ImportExternalData:
@@ -13,6 +13,7 @@ class ImportExternalData:
     konkordataliste = ""
 
     def vergi_yukle(self):
+        print("Vergi borçlularını yükleyelim")
         from checkaccount.models.models import CheckAccount
 
         df = self.read_from_excel(self.vergiborcu)
@@ -40,17 +41,20 @@ class ImportExternalData:
         return True
 
     def sgk_yukle(self):
+        print("SGK borçlularını yükleyelim")
         df = self.read_from_excel(self.sgkborcu)
         for index, row in df.iterrows():
             kimlikno = row.get('Kimlik No')
             adsoyad = row.get('Ad Soyad')
             borcu = row.get('Borç Tutarı')
-
-            SGKBorcuListesi.objects.get_or_create(
-                kimlikno=kimlikno,
-                borc_sahibi=adsoyad,
-                borc_miktari=borcu
-            )
+            try:
+                SGKBorcuListesi.objects.get_or_create(
+                    kimlikno=kimlikno,
+                    borc_sahibi=adsoyad,
+                    borc_miktari=borcu
+                )
+            except Exception as err:
+                print(f"SGK yüklenirken hata : {str(err)}")
 
     def sektorkaraliste_yukle(self):
         raise NotImplementedError
@@ -70,7 +74,7 @@ class ImportExternalData:
         raise NotImplementedError
 
     def runforme(self):
-        # pass
-        self.vergi_yukle()
-        self.sgk_yukle()
+        if not DEBUG:
+            self.vergi_yukle()
+            self.sgk_yukle()
 

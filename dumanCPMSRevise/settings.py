@@ -23,12 +23,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'd_hy!@)01pkm38_tgq$r_n&yyxft%1$7#r8iih5$!gnnjj_=wj'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '51.195.210.249']
 
 # Application definition
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

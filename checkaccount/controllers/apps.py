@@ -1,5 +1,7 @@
 from django.apps import AppConfig
 
+from dumanCPMSRevise.settings import DEBUG
+
 
 class CheckaccountConfig(AppConfig):
     name = 'checkaccount'
@@ -21,8 +23,8 @@ class CheckaccountConfig(AppConfig):
         ImportAccounts().test_runforme()
 
     def ready(self):
-        #pass
-        self.import_il_ilce()
-        self.import_sys_personnels()
-        self.import_account_data()
+        if not DEBUG:
+            self.import_il_ilce()
+            self.import_sys_personnels()
+            self.import_account_data()
 

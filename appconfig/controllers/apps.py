@@ -1,5 +1,7 @@
 from django.apps import AppConfig
 
+from dumanCPMSRevise.settings import DEBUG
+
 
 class AppconfigConfig(AppConfig):
     name = 'appconfig'
@@ -18,5 +20,5 @@ class AppconfigConfig(AppConfig):
             print("Vergi SGK vs. henüz yüklenemedi. Modül tam değil")
 
     def ready(self):
-        pass
-        # self.import_all_external_data()
+        if not DEBUG:
+            self.import_all_external_data()
