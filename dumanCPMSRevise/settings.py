@@ -71,12 +71,15 @@ CORS_ORIGIN_WHITELIST = [
     'http://localhost:8080',
     'http://127.0.0.1:8000',
     'http://127.0.0.1:8080',
+    'http://51.195.210.249:8000'
 ]
 
 # INTERNAL_IPS = [
 #     '127.0.0.1',
 #     'localhost'
 # ]
+
+SECURE_SSL_REDIRECT = False
 
 ROOT_URLCONF = 'dumanCPMSRevise.urls'
 
