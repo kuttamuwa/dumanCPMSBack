@@ -47,6 +47,7 @@ MIDDLEWARE = [
 INSTALLED_APPS = [
     'rest_framework',
 
+    # our apps
     'riskanalysis.controller.apps.RiskanalysisConfig',
     'appconfig.controllers.apps.AppconfigConfig',
     'checkaccount.controllers.apps.CheckaccountConfig',
@@ -161,6 +162,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'

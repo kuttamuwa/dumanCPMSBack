@@ -12,7 +12,7 @@ from checkaccount.models.models import CheckAccount
 class DataSetModel(BaseModel):
     objects = RiskDataSetManager()
 
-    musteri = models.ForeignKey(CheckAccount, on_delete=models.PROTECT, verbose_name='İlişkili Müşteri',
+    musteri = models.ForeignKey(CheckAccount, on_delete=models.CASCADE, verbose_name='İlişkili Müşteri',
                                 null=True, blank=True, db_column='CUSTOMER')
 
     limit = models.PositiveIntegerField(db_column='LIMIT', null=True, verbose_name='Limit', blank=True)  # 500 0000 vs

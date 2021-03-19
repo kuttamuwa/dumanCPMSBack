@@ -12,49 +12,59 @@ class ImportExternalData:
     sektorkaraliste = "il_ilce_sektor.xlsx"
     konkordataliste = ""
 
-    def vergi_yukle(self):
-        print("Vergi borçlularını yükleyelim")
+    def ca_check(self):
+        # check account data yuklendi mi
         from checkaccount.models.models import CheckAccount
+        if CheckAccount.objects.all().__len__() == 0:
+            from checkaccount.controllers.apps import CheckaccountConfig
+            CheckaccountConfig.import_account_data()
+        else:
+            print("Check account yuklenmis")
 
-        df = self.read_from_excel(self.vergiborcu)
-        kno_list = tuple(df['Vergi Kimlik No'])
-        # related_accounts = CheckAccount.objects.filter(taxpayer_number__in=kno_list).values_list('taxpayer_number')
-        df = df[df['Vergi Kimlik No'].isin(kno_list)]
+    def vergi_yukle(self):
+        if VergiBorcuListesi.objects.all().__len__() == 0:
+            print("Vergi borçlularını yükleyelim")
+            from checkaccount.models.models import CheckAccount
 
-        for index, row in df.iterrows():
-            daire = row.get('Vergi Dairesi')
-            kno = row.get('Vergi Kimlik No')
-            adsoyad = row.get('Adı Soyadı')
-            faaliyet_konusu = row.get('Esas Faaliyet Konusu')
-            borcu = row.get('Vergi Borcu')
+            df = self.read_from_excel(self.vergiborcu)
+            kno_list = tuple(df['Vergi Kimlik No'])
 
-            try:
-                acc = CheckAccount.objects.get(taxpayer_number=kno)
-                VergiBorcuListesi.objects.get_or_create(vergi_departmani=daire,
-                                                        borc_sahibi=acc,
-                                                        esas_faaliyet_konusu=faaliyet_konusu,
-                                                        borc_miktari=borcu)
-            except CheckAccount.DoesNotExist:
-                # iliskili kayit yok, pas gecilir.
-                pass
+            df = df[df['Vergi Kimlik No'].isin(kno_list)]
 
-        return True
+            for index, row in df.iterrows():
+                daire = row.get('Vergi Dairesi')
+                kno = row.get('Vergi Kimlik No')
+                adsoyad = row.get('Adı Soyadı')
+                faaliyet_konusu = row.get('Esas Faaliyet Konusu')
+                borcu = row.get('Vergi Borcu')
+
+                try:
+                    acc = CheckAccount.objects.get(taxpayer_number=kno)
+                    VergiBorcuListesi.objects.get_or_create(vergi_departmani=daire,
+                                                            borc_sahibi=acc,
+                                                            esas_faaliyet_konusu=faaliyet_konusu,
+                                                            borc_miktari=borcu)
+                except CheckAccount.DoesNotExist:
+                    # iliskili kayit yok, pas gecilir.
+                    pass
 
     def sgk_yukle(self):
-        print("SGK borçlularını yükleyelim")
-        df = self.read_from_excel(self.sgkborcu)
-        for index, row in df.iterrows():
-            kimlikno = row.get('Kimlik No')
-            adsoyad = row.get('Ad Soyad')
-            borcu = row.get('Borç Tutarı')
-            try:
-                SGKBorcuListesi.objects.get_or_create(
-                    kimlikno=kimlikno,
-                    borc_sahibi=adsoyad,
-                    borc_miktari=borcu
-                )
-            except Exception as err:
-                print(f"SGK yüklenirken hata : {str(err)}")
+        if SGKBorcuListesi.objects.all().__len__() == 0:
+            print("SGK borçlularını yükleyelim")
+            df = self.read_from_excel(self.sgkborcu)
+            for index, row in df.iterrows():
+                kimlikno = row.get('Kimlik No')
+                adsoyad = row.get('Ad Soyad')
+                borcu = row.get('Borç Tutarı')
+                try:
+                    SGKBorcuListesi.objects.get_or_create(
+                        kimlikno=kimlikno,
+                        borc_sahibi=adsoyad,
+                        borc_miktari=borcu
+                    )
+                except Exception as err:
+                    print(f"SGK yüklenirken hata : {str(err)}")
+            print("SGK yüklendi")
 
     def sektorkaraliste_yukle(self):
         raise NotImplementedError
@@ -75,6 +85,7 @@ class ImportExternalData:
 
     def runforme(self):
         if not DEBUG:
+            self.ca_check()
             self.vergi_yukle()
             self.sgk_yukle()
 

@@ -87,4 +87,4 @@ class ImportAccounts(BaseImport):
                 df = self.read_from_excel()
                 self._save(df)
 
-                print("Imported test check accounts")
+                print("Cari hesaplar yüklendi")

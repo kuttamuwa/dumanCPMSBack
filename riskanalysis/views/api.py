@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from appconfig.models.models import Domains
 from riskanalysis.models.models import DataSetModel, RiskDataSetPoints
 from riskanalysis.models.serializers import RiskPointsSerializer, RiskPointsGetSerializer, \
-    DatasetSerializerLimited
+    DatasetSerializerLimited, DatasetSerializerGeneral
 from riskanalysis.views.permissions import DatasetPermission, RiskPointsPermission
 
 
@@ -22,12 +22,12 @@ class DatasetRenderer(JSONRenderer):
 
 class DatasetAPI(viewsets.ModelViewSet):
     queryset = DataSetModel.objects.all().order_by('-created_date')
-    serializer_class = DatasetSerializerLimited
+    serializer_class = DatasetSerializerGeneral
     renderer_classes = [DatasetRenderer]
 
     permission_classes = [
-        IsAuthenticated,
-        DatasetPermission
+        # IsAuthenticated,
+        # DatasetPermission
     ]
 
     @staticmethod
@@ -87,6 +87,7 @@ class RiskPointsAPI(viewsets.ModelViewSet):
         IsAuthenticated,
         RiskPointsPermission
     ]
+    http_method_names = ['get', 'head']
 
     def __get_riskdataset(self):
         return DataSetModel.objects.filter(**self.kwargs)
