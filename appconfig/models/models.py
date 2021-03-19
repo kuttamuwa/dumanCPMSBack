@@ -20,6 +20,8 @@ class Domains(BaseModel):
 
     @staticmethod
     def import_from_excel():
+        print("Excelden domainleri yukleyelim")
+
         path = os.path.join(BASE_DIR, 'appconfig', 'data', 'Domains.xlsx')
         print(f"Path : {path}")
         df = pd.read_excel(path)
@@ -30,6 +32,8 @@ class Domains(BaseModel):
 
             d = Domains(name=name, point=point)
             d.save()
+
+        print("Domainler yüklendi")
 
     def __str__(self):
         return f'Domain: {self.name} \n' \
@@ -51,7 +55,8 @@ class Subtypes(BaseModel):
 
     @staticmethod
     def import_from_excel():
-        path = os.path.abspath(r'.\appconfig\data\Subtypes.xlsx')
+        print("Subtypelari excelden yukleyelim")
+        path = os.path.join(BASE_DIR, 'appconfig', 'data', 'Subtypes.xlsx')
         df = pd.read_excel(path)
 
         for index, row in df.iterrows():
@@ -64,6 +69,7 @@ class Subtypes(BaseModel):
             s = Subtypes(domain=d, min_interval=min_interval, max_interval=max_interval,
                          point=point)
             s.save()
+        print("Subtypelar yüklendi")
 
     def __str__(self):
         return f"Points of {self.domain} : \n" \

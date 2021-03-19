@@ -7,6 +7,16 @@ class AppconfigConfig(AppConfig):
     name = 'appconfig'
 
     @staticmethod
+    def import_all_internal_data():
+        """
+        Domains, subtypes
+        :return:
+        """
+        from appconfig.models.models import Domains, Subtypes
+        Domains.import_from_excel()
+        Subtypes.import_from_excel()
+
+    @staticmethod
     def import_all_external_data():
         """
         Vergi, SGK vs.
