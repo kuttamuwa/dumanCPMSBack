@@ -21,6 +21,7 @@ class Domains(BaseModel):
     @staticmethod
     def import_from_excel():
         path = os.path.join(BASE_DIR, 'appconfig', 'data', 'Domains.xlsx')
+        print(f"Path : {path}")
         df = pd.read_excel(path)
 
         for index, row in df.iterrows():
