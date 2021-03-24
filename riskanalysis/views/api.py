@@ -99,6 +99,35 @@ class DatasetExAPI(viewsets.ModelViewSet):
         DatasetPermission
     ]
 
+    def create(self, request, *args, **kwargs):
+        rd = super(DatasetExAPI, self).create(request, *args, **kwargs)
+        self._analyze_it(rd)
+
+        return rd
+
+    def _analyze_it(self, rd):
+        """
+        request to analyzer api
+        :param rd:
+        :return:
+        """
+        d_id = rd.data.get('data_id')
+        rd = DataSetModel.objects.get(data_id=d_id)
+        try:
+            rp = RiskDataSetPoints(risk_dataset=rd, variable='TOPLAM')
+            analyzer = rp.analyzer(rp.risk_dataset)
+            general_point = analyzer.analyze()
+            rp.point = general_point
+            rp.save()
+            rd.general_point = general_point
+            rd.save()
+
+        except Exception as err:
+            return Response(
+                status=500,
+                data=err
+            )
+
 
 class RiskPointsAPI(viewsets.ModelViewSet):
     queryset = RiskDataSetPoints.objects.all().order_by('-created_date')
