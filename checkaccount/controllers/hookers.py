@@ -3,11 +3,11 @@ import os
 import pandas as pd
 
 from checkaccount.models.models import Cities, Districts, SysPersonnel, SysDepartments, CheckAccount
-from dumanCPMSRevise.settings import DEBUG
+from dumanCPMSRevise.settings import DEBUG, BASE_DIR
 
 
 class BaseImport:
-    folder_path = os.path.abspath('./checkaccount/data')
+    folder_path = os.path.join(BASE_DIR, 'checkaccount', 'data')
     data = None
 
     def read_from_excel(self):
@@ -26,19 +26,28 @@ class BaseImport:
 
 
 class ImportCityDistrict(BaseImport):
-    data = 'ilceler.xlsx'
+    data = 'ILCELER.xlsx'
 
     @staticmethod
     def _save(df):
         for index, row in df.iterrows():
-            il = row['adm1_en']
-            ilce = row['adm2_en']
-            c = Cities.objects.get_or_create(name=il)[0]
-            Districts.objects.get_or_create(city=c, name=ilce)
+            c = Cities.objects.get_or_create(name=row.ILADI, city_plate_number=row.ILKODU)[0]
+            Districts.objects.get_or_create(city=c, name=row.ILCEADI, ilcekodu=row.ILCEKODU)
 
+        print("İl ve ilçeler yüklendi")
         return True
 
-    def test_runforme(self):
+    def delete_districts(self):
+        Districts.objects.all().delete()
+
+    def delete_cities(self):
+        Cities.objects.all().delete()
+
+    def test_runforme(self, load_again=True):
+        if load_again:
+            self.delete_districts()
+            self.delete_cities()
+
         if not DEBUG:
             if len(Districts.objects.all()) == 0:
                 df = self.read_from_excel()

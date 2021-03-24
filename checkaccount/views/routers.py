@@ -1,6 +1,7 @@
 from rest_framework import routers
 
-from checkaccount.views.api import CheckAccountAPI, SectorsAPI, SysPersonnelAPI
+from checkaccount.views.api import CheckAccountAPI
+from checkaccount.views.api import SectorsAPI, SysPersonnelAPI
 from checkaccount.views.api import CitiesAPI, DistrictAPI
 
 router = routers.DefaultRouter(trailing_slash=True)

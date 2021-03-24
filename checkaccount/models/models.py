@@ -22,6 +22,7 @@ class Districts(BaseModel):
     data_id = models.AutoField(primary_key=True)
     city = models.ForeignKey(Cities, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=100, null=True, verbose_name='İlçe', db_column='ILCE')
+    ilcekodu = models.IntegerField(name='ilcekodu')
 
     def __str__(self):
         return self.name
