@@ -16,7 +16,6 @@ class Cities(BaseModel):
 
     class Meta:
         pass
-        #db_table = 'CITIES'
 
 
 class Districts(BaseModel):

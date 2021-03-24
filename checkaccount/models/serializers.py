@@ -7,6 +7,9 @@ class CheckAccountSerializer(serializers.ModelSerializer):
         model = CheckAccount
         fields = '__all__'
 
+    def update(self, instance, validated_data):
+        return super(CheckAccountSerializer, self).update(instance, validated_data)
+
 
 class SysPersonnelSerializer(serializers.ModelSerializer):
     class Meta:

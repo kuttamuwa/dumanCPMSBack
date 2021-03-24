@@ -1,4 +1,5 @@
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 
 from checkaccount.models.models import CheckAccount, SysPersonnel, Sectors, Cities, Districts
@@ -16,15 +17,25 @@ class CheckAccountAPI(viewsets.ModelViewSet):
         IsAuthenticated,
         CheckAccountPermission
     ]
+    # lookup_field = 'pk'
+    http_method_names = ['get', 'post', 'head', 'put', 'update', 'patch', 'delete']
 
     def get_queryset(self):
-        return super(CheckAccountAPI, self).get_queryset()
+        qset = super(CheckAccountAPI, self).get_queryset()
+        pk = self.request.query_params.get('pk')
+        if pk:
+            qset = qset.filter(pk=pk)
+
+        return qset
 
     def create(self, request, *args, **kwargs):
         return super(CheckAccountAPI, self).create(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         return super(CheckAccountAPI, self).destroy(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        return super(CheckAccountAPI, self).retrieve(request, *args, **kwargs)
 
     @staticmethod
     def fill_some_fields_auto(request):
@@ -37,7 +48,6 @@ class CheckAccountAPI(viewsets.ModelViewSet):
         return request
 
     def update(self, request, *args, **kwargs):
-        request = self.fill_some_fields_auto(request)
         return super(CheckAccountAPI, self).update(request, *args, **kwargs)
 
 
