@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from appconfig.models.models import Domains
 from riskanalysis.models.models import DataSetModel, RiskDataSetPoints
 from riskanalysis.models.serializers import RiskPointsSerializer, RiskPointsGetSerializer, \
-    DatasetSerializerLimited, DatasetSerializerGeneral
+    DatasetSerializerGeneral, DatasetSerializerExclusive
 from riskanalysis.views.permissions import DatasetPermission, RiskPointsPermission
 
 
@@ -71,19 +71,33 @@ class DatasetAPI(viewsets.ModelViewSet):
         # file uploading or filling manually
         errors = []
         state = status.HTTP_200_OK
-        excel_file = request.FILES['excel']
-        errors, state = self.handle_excel_file(excel_file, errors, state)
+        try:
+            excel_file = request.FILES['excel']
+            errors, state = self.handle_excel_file(excel_file, errors, state)
 
-        return Response(data={
-            'errors': errors,
-        }, status=state
-        )
+            return Response(data={
+                'errors': errors,
+            }, status=state
+            )
+        except KeyError:
+            print("Excel gonderilmiyor, direkt kayit acilacak")
+            return super(DatasetAPI, self).create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         return super(DatasetAPI, self).update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         return super(DatasetAPI, self).destroy(request, *args, **kwargs)
+
+
+class DatasetExAPI(viewsets.ModelViewSet):
+    queryset = DataSetModel.objects.all()
+    serializer_class = DatasetSerializerExclusive
+
+    permission_classes = [
+        IsAuthenticated,
+        DatasetPermission
+    ]
 
 
 class RiskPointsAPI(viewsets.ModelViewSet):
