@@ -30,6 +30,8 @@ class CitySerializer(serializers.ModelSerializer):
 
 
 class DistrictSerializer(serializers.ModelSerializer):
+    city = serializers.CharField(source='city.name')
+
     class Meta:
         model = Districts
         fields = '__all__'
