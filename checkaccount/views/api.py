@@ -83,7 +83,12 @@ class DistrictAPI(viewsets.ModelViewSet):
     ]
 
     def get_queryset(self):
-        city_name = str(self.request.query_params.get('city')).upper()
-        city = Cities.objects.get(name__contains=city_name)
-        district_list = Districts.objects.filter(city=city)
+        if self.request.query_params:
+            city_name = str(self.request.query_params.get('city')).upper()
+            city = Cities.objects.get(name__contains=city_name)
+            district_list = Districts.objects.filter(city=city)
+
+        else:
+            district_list = Districts.objects.all()
+
         return district_list
