@@ -71,7 +71,7 @@ class CheckAccount(BaseModel):
                                                          ('Şahıs İşletmesi', 'Şahıs İşletmesi')],
                                  verbose_name='Firma Tipi', help_text='Şahıs mı Tüzel mi olduğunu giriniz',
                                  db_column='FIRM_TYPE', null=True, default='Tüzel Kişilik')
-    firm_full_name = models.CharField(max_length=200, verbose_name='Firma Adı',
+    firm_full_name = models.CharField(max_length=250, verbose_name='Firma Adı',
                                       db_column='FIRM_FULLNAME', null=True, default='Firma Test')
     taxpayer_number = models.CharField(max_length=15, verbose_name='Kimlik No',
                                        help_text='Sahis firmasi ise TCKNO, Tuzel Kisilik ise Vergi No',
