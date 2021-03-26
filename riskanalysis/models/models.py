@@ -4,7 +4,7 @@ from django.db import models
 
 from riskanalysis.errors.validators import BalanceError, NoImplementedParameter
 from riskanalysis.models.basemodels import BaseModel
-from riskanalysis.models.managers import RiskDataSetManager, AnalyzeManager
+from riskanalysis.models.managers import RiskDataSetManager, AnalyzeManager, RiskDatasetPointsManager
 
 from checkaccount.models.models import CheckAccount
 
@@ -119,6 +119,10 @@ class DataSetModel(BaseModel):
             ort_gecikme_gun_bakiyesi = row['Ort. Gecikme Gün Bakiyesi (TL)']
 
             bakiye = row.get('Bakiye')
+
+            # simdi mi analiz edilsin?
+            analyze_now = row.get('Analiz Et', True)
+
             DataSetModel.objects.get_or_create(musteri=musteri, limit=limit, teminat_durumu=teminat_durumu,
                                                teminat_tutari=teminat_tutari,
                                                vade=vade, vade_asimi_ortalamasi=vade_asimi_ortalamasi,
@@ -129,8 +133,8 @@ class DataSetModel(BaseModel):
                                                iade_yuzdesi_12=iade_yuzdesi_12,
                                                ort_gecikme_gun_sayisi=ort_gecikme_gun_sayisi,
                                                ort_gecikme_gun_bakiyesi=ort_gecikme_gun_bakiyesi,
-                                               bakiye=bakiye
-                                               )
+                                               bakiye=bakiye,
+                                               analyze_now=analyze_now)
 
         return True
 
@@ -218,7 +222,7 @@ class RiskDataSetPoints(BaseModel):
     point = models.FloatField(db_column='CALC_PTS', null=True, blank=True)
     variable = models.CharField(max_length=100, db_column='VARIABLE', null=True, blank=True)
 
-    objects = models.Manager()
+    objects = RiskDatasetPointsManager()
     analyzer = AnalyzeManager
 
     class Meta:

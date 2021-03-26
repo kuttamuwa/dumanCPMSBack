@@ -1,8 +1,83 @@
 import pandas as pd
 import os
 
-from appconfig.models.models import VergiBorcuListesi, SGKBorcuListesi
+from appconfig.models.models import VergiBorcuListesi, SGKBorcuListesi, Domains, Subtypes
 from dumanCPMSRevise.settings import BASE_DIR, DEBUG
+
+
+class BaseImport:
+    folder_path = os.path.join(BASE_DIR, 'appconfig', 'data')
+    data = None
+
+    def read_from_excel(self):
+        data_excel = os.path.join(self.folder_path, self.data)
+        df = pd.read_excel(data_excel)
+        df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+
+        return df
+
+    @staticmethod
+    def _save(df):
+        raise NotImplementedError
+
+    def runforme(self):
+        raise NotImplementedError
+
+
+class ImportDomainData(BaseImport):
+    @staticmethod
+    def _save(df):
+        print("Excelden domainleri yukleyelim")
+
+        for index, row in df.iterrows():
+            name = row['name']
+            point = row['point']
+
+            d = Domains(name=name, point=point)
+            d.save()
+
+        print("Domainler yüklendi")
+
+    data = 'Domains.xlsx'
+
+    def runforme(self):
+        if not DEBUG:
+            if len(Domains.objects.all()) == 0:
+                df = self.read_from_excel()
+                self._save(df)
+
+
+class ImportSubtypeData(BaseImport):
+    @staticmethod
+    def _save(df):
+        print("Subtypelari excelden yukleyelim")
+
+        for index, row in df.iterrows():
+            domain_name = row['domain_name']
+            d = Domains.objects.get(name=domain_name)
+            point = row['point']
+            min_interval = row['min_interval']
+            max_interval = row['max_interval']
+
+            s = Subtypes(domain=d, min_interval=min_interval, max_interval=max_interval,
+                         point=point)
+            s.save()
+        print("Subtypelar yüklendi")
+
+    data = 'Subtypes.xlsx'
+
+    def runforme(self):
+        if not DEBUG:
+            if len(Subtypes.objects.all()) == 0:
+                df = self.read_from_excel()
+                self._save(df)
+
+
+class ImportInternalData:
+    @classmethod
+    def import_all(cls):
+        ImportDomainData().runforme()
+        ImportSubtypeData().runforme()
 
 
 class ImportExternalData:
@@ -88,4 +163,3 @@ class ImportExternalData:
             self.ca_check()
             self.vergi_yukle()
             self.sgk_yukle()
-

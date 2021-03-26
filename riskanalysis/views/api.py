@@ -118,7 +118,7 @@ class DatasetExAPI(viewsets.ModelViewSet):
         try:
             rp = RiskDataSetPoints(risk_dataset=rd, variable='TOPLAM')
             analyzer = rp.analyzer(rp.risk_dataset)
-            general_point = analyzer.analyze()
+            general_point = analyzer.analyze(get_subpoints=False)
             rp.point = general_point
             rp.save()
             rd.general_point = general_point
@@ -181,7 +181,7 @@ class RiskPointsAPI(viewsets.ModelViewSet):
                 rp = RiskDataSetPoints(risk_dataset=dataset, variable='TOPLAM')
                 analyzer = rp.analyzer(rp.risk_dataset)
                 try:
-                    general_point = analyzer.analyze()
+                    general_point = analyzer.analyze(get_subpoints=False)
                     rp.point = general_point
                     dataset.general_point = general_point
 
@@ -295,13 +295,13 @@ class CardsAPI(viewsets.ReadOnlyModelViewSet):
         qparam, pk, dtype = self.retrieve_checks()
         other_params = {k: v for k, v in qparam.items() if k not in ('dtype', 'pk')}
 
-        return qparam, pk, dtype, other_params
+        return qparam, int(pk), dtype, other_params
 
     def retrieve(self, request, *args, **kwargs):
         qparam, pk, dtype, other_params = self._init_values()
 
         if dtype:
-            result = self.param_parser(dtype, pk, **other_params)
+            result = self.param_parser(dtype=dtype, pk=pk, **other_params)
             return Response(result)
         else:
             return super(CardsAPI, self).retrieve(request, *args, **kwargs)
@@ -339,10 +339,12 @@ class CardsAPI(viewsets.ReadOnlyModelViewSet):
     def adh_serializer(*args):
         _list = []
         for i in args:
-            adh_point = RiskDataSetPoints.objects.get(risk_dataset=i, variable='ADH')
+            adh_point = RiskDataSetPoints.objects.get(risk_dataset=i, variable='Devir Günü').point
+            musteri, general_point = i.get('musteri__firm_full_name'), i.get('general_point')
+
             _dict = {
-                'Müşteri': i.musteri__firm_full_name,
-                'ADH Skoru': i.general_point,
+                'Müşteri': musteri,
+                'ADH Skoru': general_point,
                 'Risk Durumu': adh_point,
             }
             _list.append(_dict)
@@ -364,10 +366,15 @@ class CardsAPI(viewsets.ReadOnlyModelViewSet):
 
         else:
             dataset = DataSetModel.objects.get(pk=dataset_id, **kwargs)
+            dataset = {
+                'musteri__firm_full_name': dataset.musteri.firm_full_name,
+                'limit': dataset.limit,
+                'bakiye': dataset.bakiye
+            }
 
-        return self.limit_serializer(*dataset)
+        return self.limit_serializer(dataset)
 
-    def adh(self, dataset_id, ay=1, multi=False, comp='dhself', **kwargs):
+    def adh(self, dataset_id: int, multi=False, comp='dhself', **kwargs):
         """
         Müşteri, ADH Skoru, Risk Durumu
         :param comp: Kendi ile mi karşılaştıralım başkalarıyla mı? -> dhself || dhothers
@@ -379,11 +386,20 @@ class CardsAPI(viewsets.ReadOnlyModelViewSet):
 
         if multi:
             count = int(kwargs.get('count', 5))
-            dataset = DataSetModel.objects.asim_yapanlar(dtype=comp)[:count]
+            dataset = DataSetModel.objects.asim_yapanlar(dtype=comp).values('musteri__firm_full_name',
+                                                                            'general_point')[:count]
         else:
-            dataset = DataSetModel.objects.get(pk=dataset_id, **kwargs)
+            try:
+                dataset = DataSetModel.objects.asim_yapanlar(dtype=comp).get(pk=dataset_id, **kwargs)
+                dataset = {
+                    'musteri__firm_full_name': dataset.musteri.firm_full_name,
+                    'general_point': dataset.general_point
+                }
 
-        return self.adh_serializer(*dataset)
+            except DataSetModel.DoesNotExist:
+                raise APINoDataException
+
+        return self.adh_serializer(dataset)
 
     def son_eklenen_musteriler(self, **kwargs):
         data = DataSetModel.objects.filter(**kwargs).order_by('-created_date').values('limit',
@@ -433,3 +449,8 @@ class APIUsageError(APIException):
     status_code = 500
     default_detail = 'Dtype olarak ym veriyorsanız pk belirtmenize gerek yok. Son eklenen müşteriler çekilecek.' \
                      'Ama diğer tüm olasılıklar için pk belirtmeniz gerek !'
+
+
+class APINoDataException(APIException):
+    status_code = 500
+    default_detail = 'Verdiğiniz id ile bir risk dataset objesi bulunamamıştır !'

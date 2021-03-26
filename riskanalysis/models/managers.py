@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import F
 
+from appconfig.controllers.hookers import ImportInternalData
 from appconfig.models.models import Domains, Subtypes
 from riskanalysis.errors.analyze import *
 from riskanalysis.errors.validators import WarrantAmountConflictError, BalanceError, NoImplementedParameter
@@ -15,18 +16,17 @@ class BaseAnalyze(models.Manager):
     domains = Domains.objects.all()
     subtypes = Subtypes.objects.all()
 
-    def check_domain_subtype(self, load_again=True):
-        if not self.domains or self.subtypes or load_again:
-            Subtypes.objects.all().delete()
-            Domains.objects.all().delete()
-            Domains.import_from_excel()
-            Subtypes.import_from_excel()
+    @classmethod
+    def check_domain_subtype(cls):
+        if not cls.domains or cls.subtypes:
+            ImportInternalData.import_all()
 
-        self.set_domain_subtype()
+        cls.set_domain_subtype()
 
-    def set_domain_subtype(self):
-        self.domains = Domains.objects.all()
-        self.subtypes = Subtypes.objects.all()
+    @classmethod
+    def set_domain_subtype(cls):
+        cls.domains = Domains.objects.all()
+        cls.subtypes = Subtypes.objects.all()
 
     def get_intervals_by_name(self, name, convert_df=False):
         d = self.domains.get(name=name)
@@ -96,11 +96,13 @@ class RiskDataSetManager(models.Manager):
 
         return args, kwargs
 
-    def analyze_(self, rp):
-        print("Veri analiz ediliyor..")
+    def analyze_(self, rd):
+        print(f"{rd.musteri.firm_full_name} analiz ediliyor..")
 
-        rp = AnalyzeManager(riskdataset=rp)
-        rp.analyze(exclusive=True)
+        rp = AnalyzeManager(riskdataset=rd)
+        general_point, subpoints = rp.analyze(get_subpoints=True)
+
+        return general_point, subpoints
 
     def get_or_create(self, *args, **kwargs):
         kwargs['musteri'] = user_check(vkntc=kwargs.get('musteri'))
@@ -109,11 +111,17 @@ class RiskDataSetManager(models.Manager):
 
         args, kwargs = self.__nan_to_none(args, kwargs)
 
-        obj = super(RiskDataSetManager, self).get_or_create(*args, **kwargs)
-        if analyze_now:
-            self.analyze_(obj)
+        obj, status = super(RiskDataSetManager, self).get_or_create(*args, **kwargs)
 
-        return obj
+        if analyze_now:
+            general_point, pts = self.analyze_(obj)
+            obj.general_point = general_point
+            obj.save()
+
+            return obj, pts
+
+        else:
+            return obj, status
 
     def limit_asimi(self):
         """
@@ -267,26 +275,30 @@ class AnalyzeManager(BaseAnalyze):
     def kontrol(self):
         if self.riskdataset is None:
             raise NoRiskDataset
-        self.check_domain_subtype(load_again=True)
+        self.check_domain_subtype()
 
     @staticmethod
-    def parse_calc_all_pts(**pts):
+    def calc_general_point(**pts):
         domain_sum_pts = pts['domain_sum_pts']
-        sum_pts = [v for _, v in pts.items() if _ != 'domain_sum_pts']
+        sum_pts = sum([v for _, v in pts.items() if _ != 'domain_sum_pts'])
         general_point = sum_pts / domain_sum_pts
 
         return general_point
 
-    def analyze(self, exclusive=False):
+    def analyze(self, get_subpoints=False):
         self.kontrol()
+        analiz_karari = self.analiz_karari()
 
-        if self.analiz_karari():
+        # todo: en son kaldır
+        analiz_karari = True
+
+        if analiz_karari:
             pts = self.calc_all_pts()
-            general_point = self.parse_calc_all_pts(**pts)
-            if exclusive:
-                return general_point
+            general_point = self.calc_general_point(**pts)
+            if get_subpoints:
+                return general_point, pts
             else:
-                return pts
+                return general_point
 
     def analiz_karari(self):
         """
@@ -410,6 +422,7 @@ class AnalyzeManager(BaseAnalyze):
 
         # return general_point
 
-    def create(self, *args, **kwargs):
-        self.analyze()
-        return super(AnalyzeManager, self).create(*args, **kwargs)
+
+class RiskDatasetPointsManager(models.Manager):
+    pass
+

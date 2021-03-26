@@ -12,9 +12,9 @@ class AppconfigConfig(AppConfig):
         Domains, subtypes
         :return:
         """
-        from appconfig.models.models import Domains, Subtypes
-        Domains.import_from_excel()
-        Subtypes.import_from_excel()
+        from appconfig.controllers.hookers import ImportInternalData
+
+        ImportInternalData().import_all()
 
     @staticmethod
     def import_all_external_data():
@@ -23,12 +23,9 @@ class AppconfigConfig(AppConfig):
         :return:
         """
         from appconfig.controllers.hookers import ImportExternalData
-        try:
-            ImportExternalData().runforme()
-
-        except NotImplementedError:
-            print("Vergi SGK vs. henüz yüklenemedi. Modül tam değil")
+        ImportExternalData().runforme()
 
     def ready(self):
         if not DEBUG:
+            self.import_all_internal_data()
             self.import_all_external_data()
