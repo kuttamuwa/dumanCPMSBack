@@ -100,7 +100,7 @@ class DummyCheckAccountCreator(BaseDummyCreator):
         kwargs['firm_full_name'] = self.gen_firm_full_name()
         kwargs = self.gen_aburcubur_attrs(**kwargs)
 
-        obj = self.get_or_create(firm_type=firm_type, *args, **kwargs)
+        obj = self.get_or_create(firm_type=firm_type, *args, **kwargs)[0]
         print(f"Sanal hesap üretildi : {obj.firm_full_name}")
         return obj
 
