@@ -22,9 +22,14 @@ class CheckaccountConfig(AppConfig):
         from checkaccount.controllers.hookers import ImportAccounts
         ImportAccounts().test_runforme()
 
+    @staticmethod
+    def import_sector_data():
+        from checkaccount.controllers.hookers import ImportSectors
+        ImportSectors().test_runforme()
+
     def ready(self):
         if not DEBUG:
             self.import_il_ilce()
             self.import_sys_personnels()
             self.import_account_data()
-
+            self.import_sector_data()

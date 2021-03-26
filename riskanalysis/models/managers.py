@@ -92,19 +92,30 @@ class RiskDataSetManager(models.Manager):
     @staticmethod
     def __nan_to_none(args, kwargs):
         args = [None if pd.isna(i) else i for i in args]
-        kwargs = {k: None if pd.isna(v) else v for k, v in kwargs.items()}
+        kwargs = {k: None if pd.isna(v) else v for k, v in kwargs.items() if k != 'analyze_now'}
 
         return args, kwargs
+
+    def analyze_(self, rp):
+        print("Veri analiz ediliyor..")
+
+        rp = AnalyzeManager(riskdataset=rp)
+        rp.analyze(exclusive=True)
 
     def get_or_create(self, *args, **kwargs):
         kwargs['musteri'] = user_check(vkntc=kwargs.get('musteri'))
         kwargs['teminat_durumu'] = self.teminat_check(kwargs.get('teminat_durumu'), kwargs.get('teminat_tutari'))
+        analyze_now = kwargs.get('analyze_now', True)
 
         args, kwargs = self.__nan_to_none(args, kwargs)
 
-        return super(RiskDataSetManager, self).create(*args, **kwargs)
+        obj = super(RiskDataSetManager, self).get_or_create(*args, **kwargs)
+        if analyze_now:
+            self.analyze_(obj)
 
-    def _limit_asimi(self):
+        return obj
+
+    def limit_asimi(self):
         """
         Limit - Bakiye. > 0 -> True else -> False
         :return:
@@ -224,9 +235,9 @@ class RiskDataSetManager(models.Manager):
         """
         print("Vade asimi yapanlar bulunur")
         dtype_list = {'v': self._vade_asimi,
-                      'dh1': self._devir_hizi_self_artmis,
-                      'dh2': self._devir_hizi_baskalariyla_artmis,
-                      'l': self._limit_asimi,
+                      'dhself': self._devir_hizi_self_artmis,
+                      'dhothers': self._devir_hizi_baskalariyla_artmis,
+                      'l': self.limit_asimi,
                       'i1': self._iade_self_artis,
                       'i2': self._iade_baskalariyla_artis,
                       's': self._sgk_borcu_olanlar,
@@ -258,12 +269,24 @@ class AnalyzeManager(BaseAnalyze):
             raise NoRiskDataset
         self.check_domain_subtype(load_again=True)
 
-    def analyze(self):
+    @staticmethod
+    def parse_calc_all_pts(**pts):
+        domain_sum_pts = pts['domain_sum_pts']
+        sum_pts = [v for _, v in pts.items() if _ != 'domain_sum_pts']
+        general_point = sum_pts / domain_sum_pts
+
+        return general_point
+
+    def analyze(self, exclusive=False):
         self.kontrol()
 
         if self.analiz_karari():
-            general_point = self.calc_all_pts()
-            return general_point
+            pts = self.calc_all_pts()
+            general_point = self.parse_calc_all_pts(**pts)
+            if exclusive:
+                return general_point
+            else:
+                return pts
 
     def analiz_karari(self):
         """
@@ -271,9 +294,6 @@ class AnalyzeManager(BaseAnalyze):
         HINT: Puanlaması başka fonksiyonda
         """
         analiz_karari = self.riskdataset.hesapla_analiz_karari()
-
-        # todo : False çıkma ihtimali olabilir. O yüzden default True yaptık
-        analiz_karari = True
 
         return analiz_karari
 
@@ -288,9 +308,10 @@ class AnalyzeManager(BaseAnalyze):
         siparis_ort_sapma = self.riskdataset.hesapla_satis_ort_sapma()
 
         pts = self.get_points_from_value(siparis_ort_sapma, pnt_df)
+        pts = pts * domain_point
 
         # multiply by domain point
-        return pts * domain_point
+        return pts
 
     def karsilastirma_son_12_ay_iade_yuzdesi(self):
         """
@@ -303,8 +324,9 @@ class AnalyzeManager(BaseAnalyze):
         pnt_df, domain_point = self.get_intervals_by_name('Son 12 ay iade yüzdesi', convert_df=True)
         iade_yuzdesi_sapma = self.riskdataset.hesapla_iade_yuzdesi_sapma()
         pts = self.get_points_from_value(iade_yuzdesi_sapma, pnt_df)
+        pts = pts * domain_point
 
-        return pts * domain_point
+        return pts
 
     def ort_gecikme_gun_sayisi(self):
         """
@@ -316,8 +338,9 @@ class AnalyzeManager(BaseAnalyze):
         pnt_df, domain_point = self.get_intervals_by_name('Ortalama Gecikme Gün Sayısı', convert_df=True)
         ort_gecikme_gun_sayisi = self.riskdataset.ort_gecikme_gun_sayisi
         pts = self.get_points_from_value(ort_gecikme_gun_sayisi, pnt_df)
+        pts = pts * domain_point
 
-        return pts * domain_point
+        return pts
 
     def ort_gecikme_gun_bakiyesi(self):
         """
@@ -329,8 +352,9 @@ class AnalyzeManager(BaseAnalyze):
         pnt_df, domain_point = self.get_intervals_by_name('Ortalama Gecikme Gün Bakiyesi', convert_df=True)
         ort_gecikme_gun_bakiyesi = self.riskdataset.ort_gecikme_gun_bakiyesi
         pts = self.get_points_from_value(ort_gecikme_gun_bakiyesi, pnt_df)
+        pts = pts * domain_point
 
-        return pts * domain_point
+        return pts
 
     def devir_gunu(self):
         """
@@ -342,8 +366,9 @@ class AnalyzeManager(BaseAnalyze):
         pnt_df, domain_point = self.get_intervals_by_name('Devir Günü', convert_df=True)
         devir_gunu = self.riskdataset.hesapla_devir_gunu()
         pts = self.get_points_from_value(devir_gunu, pnt_df)
+        pts = pts * domain_point
 
-        return pts * domain_point
+        return pts
 
     def karsilastirma_teminat_limit(self):
         """
@@ -353,11 +378,12 @@ class AnalyzeManager(BaseAnalyze):
         %75 üzeri 	3
 
         """
-        pnt_df, domain_point = self.get_intervals_by_name('Devir Günü', convert_df=True)
+        pnt_df, domain_point = self.get_intervals_by_name('Teminat Limiti', convert_df=True)
         teminat_limit_risk_kars_seviyesi = self.riskdataset.hesapla_karsilastir_teminat_limit()
         pts = self.get_points_from_value(teminat_limit_risk_kars_seviyesi, pnt_df)
+        pts = pts * domain_point
 
-        return pts * domain_point
+        return pts
 
     def calc_all_pts(self):
         pts_satis_ort = self.karsilastirma_son_12ay_satis_ort()
@@ -367,12 +393,22 @@ class AnalyzeManager(BaseAnalyze):
         pts_devir_gunu = self.devir_gunu()
         pts_teminat_riski = self.karsilastirma_teminat_limit()
 
-        sum_pts = sum([pts_satis_ort, pts_iade_yuzdesi, pts_gecikme_bakiye, pts_gecikme_sayisi,
-                       pts_devir_gunu, pts_teminat_riski])
-        domain_sum_pts = self.get_domain_sum_points()
-        general_point = sum_pts / domain_sum_pts
+        return {
+            'Son 12 Ay Satış Ortalamasından Sapma': pts_satis_ort,
+            'Son 12 ay iade yüzdesi': pts_iade_yuzdesi,
+            'Ortalama Gecikme Gün Bakiyesi': pts_gecikme_bakiye,
+            'Ortalama Gecikme Gün Sayısı': pts_gecikme_sayisi,
+            'Devir Günü': pts_devir_gunu,
+            'Teminat Limiti': pts_teminat_riski,
+            'domain_sum_pts': self.get_domain_sum_points()
+        }
 
-        return general_point
+        # sum_pts = sum([pts_satis_ort, pts_iade_yuzdesi, pts_gecikme_bakiye, pts_gecikme_sayisi,
+        #                pts_devir_gunu, pts_teminat_riski])
+        # domain_sum_pts = self.get_domain_sum_points()
+        # general_point = sum_pts / domain_sum_pts
+
+        # return general_point
 
     def create(self, *args, **kwargs):
         self.analyze()

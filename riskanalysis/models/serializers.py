@@ -23,6 +23,12 @@ class RiskPointsSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class CardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DataSetModel
+        fields = '__all__'
+
+
 class RiskPointsGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = RiskDataSetPoints

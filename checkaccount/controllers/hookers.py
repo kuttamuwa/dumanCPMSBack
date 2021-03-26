@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 
-from checkaccount.models.models import Cities, Districts, SysPersonnel, SysDepartments, CheckAccount
+from checkaccount.models.models import Cities, Districts, SysPersonnel, SysDepartments, CheckAccount, Sectors
 from dumanCPMSRevise.settings import DEBUG, BASE_DIR
 
 
@@ -97,3 +97,21 @@ class ImportAccounts(BaseImport):
                 self._save(df)
 
                 print("Cari hesaplar yüklendi")
+
+
+class ImportSectors(BaseImport):
+    data = 'sektorler.xlsx'
+
+    @staticmethod
+    def _save(df):
+        for index, row in df.iterrows():
+            sektor = row.SEKTORADI
+            Sectors.objects.get_or_create(name=sektor)
+
+    def test_runforme(self):
+        if not DEBUG:
+            if len(Sectors.objects.all()) == 0:
+                df = self.read_from_excel()
+                self._save(df)
+
+                print("Sektörler yüklendi")

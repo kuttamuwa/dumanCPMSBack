@@ -8,12 +8,14 @@ from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from appconfig.models.models import Domains
+from checkaccount.models.models import CheckAccount
 from riskanalysis.models.models import DataSetModel, RiskDataSetPoints
 from riskanalysis.models.serializers import RiskPointsSerializer, RiskPointsGetSerializer, \
-    DatasetSerializerGeneral, DatasetSerializerExclusive
-from riskanalysis.views.permissions import DatasetPermission, RiskPointsPermission
+    DatasetSerializerGeneral, DatasetSerializerExclusive, CardSerializer
+from riskanalysis.views.permissions import DatasetPermission, RiskPointsPermission, CardsPermissions
 
 
 class DatasetRenderer(JSONRenderer):
@@ -238,6 +240,164 @@ class RiskPointsAPI(viewsets.ModelViewSet):
         return qset
 
 
+class CardsAPI(viewsets.ReadOnlyModelViewSet):
+    """
+    Kartlar için kullanılan API'dir.
+
+    Sağlanan veriler:
+        3 Tipte veri getirir:
+        * Limit aşımları
+        * ADH
+        * Yeni Müşteri Raporu
+        * Müşteri Performans Raporu
+        * Vade Aşımı Raporu
+        * Uyarılar
+
+    * Kullanım
+    pk verilirse tekil müşterinin, verilmezse 5 müşterinin kaydı getirilir. Daha fazla kayıt isteniyorsa
+    count parametresi belirtilmeli.
+
+        Limit aşımları: dtype=l -> Tekil de çoğul da kullanılabilir. Ör:
+            ..:8000/riskanalysis/api/dashboard/12/?dtype=l
+            ..:8000/riskanalysis/api/dashboard/?dtype=l
+
+        Alacak Devir hızı: dtype=adh -> Tekil + Çoğul. Ör:
+
+    """
+    queryset = DataSetModel.objects.all()
+    serializer_class = CardSerializer
+    permission_classes = [
+        IsAuthenticated,
+        CardsPermissions
+    ]
+
+    def param_parser(self, dtype, multi=False, pk=None, **kwargs):
+        if dtype == 'l':
+            return self.limit_bakiye(dataset_id=pk, multi=multi, **kwargs)
+
+        elif dtype == 'adh':
+            return self.adh(dataset_id=pk, multi=multi, **kwargs)
+
+        elif dtype == 'ym':
+            return self.son_eklenen_musteriler(**kwargs)
+
+    def list_checks(self, request, *args, **kwargs):
+        pass
+
+    def retrieve_checks(self):
+        qparam = self.request.query_params
+        pk = self.request.parser_context.get('kwargs').get('pk')
+        dtype = qparam.get('dtype')
+
+        return qparam, pk, dtype
+
+    def _init_values(self):
+        qparam, pk, dtype = self.retrieve_checks()
+        other_params = {k: v for k, v in qparam.items() if k not in ('dtype', 'pk')}
+
+        return qparam, pk, dtype, other_params
+
+    def retrieve(self, request, *args, **kwargs):
+        qparam, pk, dtype, other_params = self._init_values()
+
+        if dtype:
+            result = self.param_parser(dtype, pk, **other_params)
+            return Response(result)
+        else:
+            return super(CardsAPI, self).retrieve(request, *args, **kwargs)
+
+    def list(self, request, *args, **kwargs):
+        qparam, pk, dtype, other_params = self._init_values()
+        count = int(other_params.get('count', 5))
+
+        if dtype:
+            result = self.param_parser(dtype, multi=True, **other_params)
+
+            return Response(result)
+        else:
+            dset = super(CardsAPI, self).list(request, *args, **kwargs).data[:count]
+            return Response(dset)
+
+    http_method_names = ['get', 'head']
+
+    @staticmethod
+    def limit_serializer(*args):
+        _list = []
+        for i in args:
+            musteri, limit, bakiye = i.get('musteri__firm_full_name'), i.get('limit'), i.get('bakiye')
+            _dict = {
+                'Müşteri': musteri,
+                'Tanımlanan Limit': limit,
+                'Bakiye': bakiye,
+                'Limit Aşımı': limit - bakiye
+            }
+            _list.append(_dict)
+
+        return _list
+
+    @staticmethod
+    def adh_serializer(*args):
+        _list = []
+        for i in args:
+            adh_point = RiskDataSetPoints.objects.get(risk_dataset=i, variable='ADH')
+            _dict = {
+                'Müşteri': i.musteri__firm_full_name,
+                'ADH Skoru': i.general_point,
+                'Risk Durumu': adh_point,
+            }
+            _list.append(_dict)
+
+        return _list
+
+    def limit_bakiye(self, dataset_id, multi=False, **kwargs):
+        """
+        Müşteri, Limit ve Limit - Bakiye
+        :param multi: List or retrieve
+        :param dataset_id:
+        :return:
+        """
+        if multi:
+            count = int(kwargs.get('count', 5))
+            dataset = DataSetModel.objects.limit_asimi().values('musteri__firm_full_name',
+                                                                'limit',
+                                                                'bakiye')[:count]
+
+        else:
+            dataset = DataSetModel.objects.get(pk=dataset_id, **kwargs)
+
+        return self.limit_serializer(*dataset)
+
+    def adh(self, dataset_id, ay=1, multi=False, comp='dhself', **kwargs):
+        """
+        Müşteri, ADH Skoru, Risk Durumu
+        :param comp: Kendi ile mi karşılaştıralım başkalarıyla mı? -> dhself || dhothers
+        :param multi: List || Retrieve
+        :param dataset_id:
+        :param ay: 1 veya 12 olabilir
+        :return:
+        """
+
+        if multi:
+            count = int(kwargs.get('count', 5))
+            dataset = DataSetModel.objects.asim_yapanlar(dtype=comp)[:count]
+        else:
+            dataset = DataSetModel.objects.get(pk=dataset_id, **kwargs)
+
+        return self.adh_serializer(*dataset)
+
+    def son_eklenen_musteriler(self, **kwargs):
+        data = DataSetModel.objects.filter(**kwargs).order_by('-created_date').values('limit',
+                                                                                      'teminat_durumu',
+                                                                                      'musteri__firm_full_name')
+        _dict = [
+            {'Müşteri': k.get('musteri__firm_full_name'),
+             'Tanımlanan Limit': k.get('limit'),
+             'Teminat Durumu': k.get('teminat_durumu')}
+            for k in data
+        ]
+        return data
+
+
 class ServiceUnavailable(APIException):
     status_code = 503
     default_detail = 'Service geçici olarak kullanıma kapalıdır, lütfen tekrar deneyiniz.'
@@ -267,3 +427,9 @@ class DomainDoesNotExist(APIException):
     default_detail = 'Domain verilerinizde hata vardır. Lütfen verileri yüklediğinizden ve subtype ' \
                      'içerisindeki domain_name kısmındaki domainlerin Domains.xlsx dosyasında da olduğundan ' \
                      'emin olunuz'
+
+
+class APIUsageError(APIException):
+    status_code = 500
+    default_detail = 'Dtype olarak ym veriyorsanız pk belirtmenize gerek yok. Son eklenen müşteriler çekilecek.' \
+                     'Ama diğer tüm olasılıklar için pk belirtmeniz gerek !'

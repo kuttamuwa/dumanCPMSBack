@@ -46,6 +46,9 @@ class RiskDatasetTests(TestCase):
             ort_gecikme_gun_sayisi = row.get('Ort. Gecikme Gün Sayısı')
             ort_gecikme_gun_bakiyesi = row.get('Ort. Gecikme Gün Bakiyesi (TL)')
 
+            # simdi mi analiz edilsin?
+            analyze_now = row.get('Analiz Et', True)
+
             bakiye = row.get('Bakiye')
             DataSetModel.objects.get_or_create(musteri=musteri, limit=limit, teminat_durumu=teminat_durumu,
                                                teminat_tutari=teminat_tutari,
@@ -57,8 +60,8 @@ class RiskDatasetTests(TestCase):
                                                iade_yuzdesi_12=iade_yuzdesi_12,
                                                ort_gecikme_gun_sayisi=ort_gecikme_gun_sayisi,
                                                ort_gecikme_gun_bakiyesi=ort_gecikme_gun_bakiyesi,
-                                               bakiye=bakiye
-                                               )
+                                               bakiye=bakiye,
+                                               analyze_now=analyze_now)
 
         return True
 
