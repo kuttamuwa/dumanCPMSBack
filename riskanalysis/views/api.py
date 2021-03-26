@@ -10,7 +10,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from appconfig.models.models import Domains
+from appconfig.models.models import Domains, VergiBorcuListesi, SGKBorcuListesi, SystemBlackList, KonkordatoList
 from checkaccount.models.models import CheckAccount
 from riskanalysis.models.models import DataSetModel, RiskDataSetPoints
 from riskanalysis.models.serializers import RiskPointsSerializer, RiskPointsGetSerializer, \
@@ -268,13 +268,18 @@ class CardsAPI(viewsets.ReadOnlyModelViewSet):
             ..:8000/riskanalysis/api/dashboard/?dtype=adh
             ..:8000/riskanalysis/api/dashboard/686/?dtype=adh
 
+        Uyarı listesi: dtype=u -> Çoğul gelecektir. Ör:
+            ..:8000/riskanalysis/api/dashboard/?dtype=u
+
     """
-    queryset = DataSetModel.objects.all()
     serializer_class = CardSerializer
     permission_classes = [
         IsAuthenticated,
         CardsPermissions
     ]
+
+    def get_queryset(self):
+        return DataSetModel.objects.all()
 
     def param_parser(self, dtype, multi=False, pk=None, hepsi=False, **kwargs):
         if dtype == 'l':
@@ -285,6 +290,9 @@ class CardsAPI(viewsets.ReadOnlyModelViewSet):
 
         elif dtype == 'ym':
             return self.son_eklenen_musteriler(**kwargs)
+
+        elif dtype == 'u':
+            return self.get_uyarilar(**kwargs)
 
     def list_checks(self, request, *args, **kwargs):
         pass
@@ -420,6 +428,105 @@ class CardsAPI(viewsets.ReadOnlyModelViewSet):
             for k in data
         ]
         return data
+
+    def get_vergi_yuzsuzleri(self, match=True):
+        """
+        :param match: Eşleşmesi gerekir.
+        :return:
+        """
+
+        vlist = VergiBorcuListesi.objects.all()
+        result = self.get_borclular(vlist, konu='Vergi Borcu Listesinde !', match=match)
+
+        return result
+
+    def get_sgk_borclular(self, match=True):
+        """
+
+        :return:
+        """
+        vlist = SGKBorcuListesi.objects.all()
+        result = self.get_borclular(vlist, konu='SGK Borcu var !', match=match)
+
+        return result
+
+    def get_sistem_karaliste(self, match=True):
+        """
+
+        :return:
+        """
+        vlist = SystemBlackList.objects.all()
+        result = self.get_borclular(vlist, konu = 'Sistem Kara Listesinde !', match=match)
+
+        return result
+
+    def get_konkordato_list(self, match=True):
+        vlist = KonkordatoList.objects.all()
+        result = self.get_borclular(vlist, konu='Konkordato Listesinde !', match=match)
+
+        return result
+
+    def get_borclular(self, models, konu, match):
+        """
+       Şimdilik,
+       Vergi ve SGK'ya girenler getirilir.
+
+       :return:
+        """
+        vlist = models
+        _list = []
+
+        for v in vlist:
+            musteri = v.borc_sahibi.firm_full_name
+            try:
+                rd = DataSetModel.objects.get(musteri=v.borc_sahibi)
+                risk_durumu = rd.general_point
+
+            except DataSetModel.DoesNotExist:
+                if match:
+                    continue
+
+                risk_durumu = "Listedeki kişi bizim veritabanında yok !"
+
+            _dict = {
+                'Müşteri': musteri,
+                'Risk Durumu': risk_durumu,
+                'Konu': konu
+            }
+            _list.append(_dict)
+
+        return _list
+
+    def get_uyarilar(self, **kwargs):
+        """
+        Şimdilik,
+        Vergi ve SGK'ya girenler getirilir.
+
+        :return:
+        """
+        match = kwargs.get('match') != 'false'
+        count = int(kwargs.get('count', 10))
+
+        vergi_yuzsuzleri = self.get_vergi_yuzsuzleri(match=match)[:count]
+        sgk_borclular = self.get_sgk_borclular(match=match)[:count]
+        konkordatolar = self.get_konkordato_list(match=match)[:count]
+        karaliste = self.get_sistem_karaliste(match=match)[:count]
+
+        _dict = {
+            'Vergi Yüzsüzleri': vergi_yuzsuzleri,
+            'SGK Borçlular': sgk_borclular,
+            'Konkordato': konkordatolar,
+            'Kara Liste': karaliste
+        }
+
+        return _dict
+
+
+class GetWarnings:
+    """
+    # todo: sonra yukarıdaki uyarıları al
+    """
+    pass
 
 
 class ServiceUnavailable(APIException):

@@ -1,5 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 
 from checkaccount.models.models import CheckAccount, SysPersonnel, Sectors, Cities, Districts
@@ -10,14 +11,21 @@ from checkaccount.views.permissions import CheckAccountPermission
 from riskanalysis.models.models import DataSetModel
 
 
+class CheckAccountPagination(PageNumberPagination):
+    page_size = 100
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
+
 class CheckAccountAPI(viewsets.ModelViewSet):
     queryset = CheckAccount.objects.all().order_by('-created_date')
+    pagination_class = CheckAccountPagination
     serializer_class = CheckAccountSerializer
     permission_classes = [
         IsAuthenticated,
         CheckAccountPermission
     ]
-    # lookup_field = 'pk'
+
     http_method_names = ['get', 'post', 'head', 'put', 'update', 'patch', 'delete']
 
     def get_queryset(self):
@@ -28,15 +36,6 @@ class CheckAccountAPI(viewsets.ModelViewSet):
 
         return qset
 
-    def create(self, request, *args, **kwargs):
-        return super(CheckAccountAPI, self).create(request, *args, **kwargs)
-
-    def destroy(self, request, *args, **kwargs):
-        return super(CheckAccountAPI, self).destroy(request, *args, **kwargs)
-
-    def retrieve(self, request, *args, **kwargs):
-        return super(CheckAccountAPI, self).retrieve(request, *args, **kwargs)
-
     @staticmethod
     def fill_some_fields_auto(request):
         request.POST._mutable = True
@@ -46,9 +45,6 @@ class CheckAccountAPI(viewsets.ModelViewSet):
 
         request.POST._mutable = False
         return request
-
-    def update(self, request, *args, **kwargs):
-        return super(CheckAccountAPI, self).update(request, *args, **kwargs)
 
 
 class SysPersonnelAPI(viewsets.ModelViewSet):

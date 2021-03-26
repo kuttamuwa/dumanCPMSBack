@@ -4,13 +4,15 @@ from django.db import models
 
 from riskanalysis.errors.validators import BalanceError, NoImplementedParameter
 from riskanalysis.models.basemodels import BaseModel
-from riskanalysis.models.managers import RiskDataSetManager, AnalyzeManager, RiskDatasetPointsManager
+from riskanalysis.models.managers import RiskDataSetManager, AnalyzeManager, RiskDatasetPointsManager, \
+    DummyRiskAnalysisCreator
 
 from checkaccount.models.models import CheckAccount
 
 
 class DataSetModel(BaseModel):
     objects = RiskDataSetManager()
+    dummy_creator = DummyRiskAnalysisCreator()
 
     musteri = models.ForeignKey(CheckAccount, on_delete=models.CASCADE, verbose_name='İlişkili Müşteri',
                                 null=True, blank=True, db_column='CUSTOMER')
@@ -66,6 +68,9 @@ class DataSetModel(BaseModel):
     # will be calculated later with analyzer service
     general_point = models.FloatField(verbose_name='Genel Puan', null=True, blank=True,
                                       db_column='GENERAL_POINT')
+
+    class Meta:
+        db_table = 'RISK_DATA'
 
     def __str__(self):
         return f"Risk Dataset: {self.musteri}"
@@ -212,9 +217,6 @@ class DataSetModel(BaseModel):
 
         return excel_field
 
-    class Meta:
-        db_table = 'RISK_DATA'
-
 
 class RiskDataSetPoints(BaseModel):
     risk_dataset = models.ForeignKey(DataSetModel, on_delete=models.SET_NULL, db_column='RELATED_RISK',
@@ -229,4 +231,4 @@ class RiskDataSetPoints(BaseModel):
         db_table = 'RISK_DATASET_POINTS'
 
     def __str__(self):
-        return f'POINTS OF {self.risk_dataset}'
+        return f'POINTS OF {self.risk_dataset.musteri.firm_full_name}'

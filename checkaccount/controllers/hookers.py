@@ -84,7 +84,7 @@ class ImportAccounts(BaseImport):
     @staticmethod
     def _save(df):
         for index, row in df.iterrows():
-            CheckAccount.objects.get_or_create(**dict(row))
+            CheckAccount.objects.get_or_create_account(**dict(row))
 
     def test_runforme(self):
         if not DEBUG:

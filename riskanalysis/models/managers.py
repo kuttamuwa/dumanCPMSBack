@@ -60,17 +60,6 @@ class BaseAnalyze(models.Manager):
         return pts
 
 
-def user_check(vkntc, create_dummy=True):
-    if vkntc is None:
-        if create_dummy:
-            return CheckAccount.dummy_creator.create_dummy()
-        else:
-            raise CheckAccount.DoesNotExist
-    else:
-        vkntc = CheckAccount.objects.get_or_create(taxpayer_number=vkntc)
-        return vkntc[0]
-
-
 class RiskDataSetManager(models.Manager):
 
     @staticmethod
@@ -84,15 +73,17 @@ class RiskDataSetManager(models.Manager):
         return teminat_durumu
 
     def create(self, *args, **kwargs):
-        kwargs['musteri'] = user_check(vkntc=kwargs.get('VKNTC'))
-        kwargs['teminat_durumu'] = self.teminat_check(kwargs.get('teminat_durumu'), kwargs.get('teminat_tutari'))
+        kwargs['musteri'] = CheckAccount.dummy_creator.check_or_create_dummy(*args, **kwargs)
+        kwargs['teminat_durumu'] = self.teminat_check(kwargs.get('teminat_durumu'),
+                                                      kwargs.get('teminat_tutari'))
 
         return super(RiskDataSetManager, self).create(*args, **kwargs)
 
     @staticmethod
     def __nan_to_none(args, kwargs):
         args = [None if pd.isna(i) else i for i in args]
-        kwargs = {k: None if pd.isna(v) else v for k, v in kwargs.items() if k != 'analyze_now'}
+        kwargs = {k: None if pd.isna(v) else v for k, v in kwargs.items() if k not in ('analyze_now',
+                                                                                       'create_account_if_not')}
 
         return args, kwargs
 
@@ -105,8 +96,6 @@ class RiskDataSetManager(models.Manager):
         return general_point, subpoints
 
     def get_or_create(self, *args, **kwargs):
-        kwargs['musteri'] = user_check(vkntc=kwargs.get('musteri'))
-        kwargs['teminat_durumu'] = self.teminat_check(kwargs.get('teminat_durumu'), kwargs.get('teminat_tutari'))
         analyze_now = kwargs.get('analyze_now', True)
 
         args, kwargs = self.__nan_to_none(args, kwargs)
@@ -426,3 +415,19 @@ class AnalyzeManager(BaseAnalyze):
 class RiskDatasetPointsManager(models.Manager):
     pass
 
+
+class BaseDummyCreator(models.Manager):
+    def gen_user(self, musteri, *args, **kwargs):
+        kwargs = self.gen_aburcubur_attrs(**kwargs)
+
+        obj = self.create(musteri=musteri)
+        print(f"Sanal risk verisi üretildi : {obj.firm_full_name}")
+        return obj
+
+
+class DummyRiskAnalysisCreator(BaseDummyCreator):
+    def check_or_create_dummy(self, musteri, *args, **kwargs):
+        try:
+            return self.get(musteri=musteri)
+        except models.ObjectDoesNotExist:
+            return self.gen_user(musteri, *args, **kwargs)

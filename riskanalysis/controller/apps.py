@@ -1,5 +1,7 @@
 from django.apps import AppConfig
 
+from dumanCPMSRevise.settings import DEBUG
+
 
 class RiskanalysisConfig(AppConfig):
     name = 'riskanalysis'
@@ -7,9 +9,8 @@ class RiskanalysisConfig(AppConfig):
     @staticmethod
     def import_test_data():
         from riskanalysis.controller.hookers import ImportRiskDataset
-        ImportRiskDataset().test_runforme()
+        ImportRiskDataset().runforme()
 
     def ready(self):
-        # todo: set
-        # if not DEBUG:
-        self.import_test_data()
+        if not DEBUG:
+            self.import_test_data()

@@ -1,8 +1,13 @@
 import pandas as pd
 import os
 
+from appconfig.errors.cruds import ImpossibleDecision
 from appconfig.models.models import VergiBorcuListesi, SGKBorcuListesi, Domains, Subtypes
+from checkaccount.models.models import CheckAccount
 from dumanCPMSRevise.settings import BASE_DIR, DEBUG
+
+
+# from riskanalysis.models.models import DataSetModel
 
 
 class BaseImport:
@@ -113,15 +118,22 @@ class ImportExternalData:
                 faaliyet_konusu = row.get('Esas Faaliyet Konusu')
                 borcu = row.get('Vergi Borcu')
 
+                acc = self.get_or_create_account(adsoyad, taxpayer_number=kno)
                 try:
-                    acc = CheckAccount.objects.get(taxpayer_number=kno)
-                    VergiBorcuListesi.objects.get_or_create(vergi_departmani=daire,
-                                                            borc_sahibi=acc,
-                                                            esas_faaliyet_konusu=faaliyet_konusu,
-                                                            borc_miktari=borcu)
-                except CheckAccount.DoesNotExist:
-                    # iliskili kayit yok, pas gecilir.
-                    pass
+                    VergiBorcuListesi.objects.get_or_create_account(vergi_departmani=daire,
+                                                                    borc_sahibi=acc,
+                                                                    esas_faaliyet_konusu=faaliyet_konusu,
+                                                                    borc_miktari=borcu)
+                except Exception as err:
+                    print(f"Vergi borçluları yüklenirken hata : {str(err)}")
+
+            print("Vergi borçluları tarama yükleme tamamlandı")
+
+    def get_or_create_account(self, firm_full_name, **kwargs):
+        try:
+            return CheckAccount.objects.get(firm_full_name=firm_full_name, **kwargs)
+        except CheckAccount.DoesNotExist:
+            return CheckAccount.dummy_creator.check_or_create_dummy(firm_full_name, **kwargs)
 
     def sgk_yukle(self):
         if SGKBorcuListesi.objects.all().__len__() == 0:
@@ -129,17 +141,18 @@ class ImportExternalData:
             df = self.read_from_excel(self.sgkborcu)
             for index, row in df.iterrows():
                 kimlikno = row.get('Kimlik No')
-                adsoyad = row.get('Ad Soyad')
+                borc_sahibi = self.get_or_create_account(row.get('Ad Soyad'))
                 borcu = row.get('Borç Tutarı')
                 try:
                     SGKBorcuListesi.objects.get_or_create(
                         kimlikno=kimlikno,
-                        borc_sahibi=adsoyad,
+                        borc_sahibi=borc_sahibi,
                         borc_miktari=borcu
                     )
                 except Exception as err:
                     print(f"SGK yüklenirken hata : {str(err)}")
-            print("SGK yüklendi")
+
+            print("SGK borçluları tarama yükleme tamamlandı")
 
     def sektorkaraliste_yukle(self):
         raise NotImplementedError

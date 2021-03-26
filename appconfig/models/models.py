@@ -52,10 +52,6 @@ class BaseBlackLists(BaseModel):
                                    help_text='Borçlunun Adı Soyadı',
                                    db_column='DEPT_TITLE', max_length=250, null=True)
 
-    # borc_sahibi = models.CharField(unique=False,
-    #                                help_text='Borçlunun Adı Soyadı',
-    #                                db_column='DEPT_TITLE', max_length=150, null=True)
-
     class Meta:
         db_table = 'BLACK_LIST'
         abstract = True
@@ -71,6 +67,7 @@ class SGKBorcuListesi(BaseBlackLists):
     borc_miktari = models.FloatField(unique=False,
                                      help_text='Borç Miktarı',
                                      db_column='DEPT_AMOUNT')
+    borc_sahibi = models.ForeignKey(CheckAccount, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'SGK_DEBTS'
@@ -101,6 +98,8 @@ class VergiBorcuListesi(BaseBlackLists):
 
 
 class SystemBlackList(BaseBlackLists):
+    borc_sahibi = models.ForeignKey(CheckAccount, on_delete=models.CASCADE)
+
     class Meta:
         db_table = 'SYS_BLACK_LIST'
 
@@ -109,6 +108,8 @@ class SystemBlackList(BaseBlackLists):
 
 
 class KonkordatoList(BaseBlackLists):
+    borc_sahibi = models.ForeignKey(CheckAccount, on_delete=models.CASCADE)
+
     class Meta:
         db_table = 'KONKORDATO_LIST'
 

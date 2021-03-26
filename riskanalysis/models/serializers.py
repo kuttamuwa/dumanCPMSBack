@@ -18,6 +18,8 @@ class DatasetSerializerExclusive(serializers.ModelSerializer):
 
 
 class RiskPointsSerializer(serializers.ModelSerializer):
+    musteri = serializers.CharField(source='musteri.firm_full_name')
+
     class Meta:
         model = RiskDataSetPoints
         fields = '__all__'
