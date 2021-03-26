@@ -26,6 +26,8 @@ class RiskPointsSerializer(serializers.ModelSerializer):
 
 
 class CardSerializer(serializers.ModelSerializer):
+    musteri = serializers.CharField(source='musteri.firm_full_name')
+
     class Meta:
         model = DataSetModel
         fields = '__all__'
