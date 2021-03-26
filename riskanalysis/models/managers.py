@@ -95,7 +95,7 @@ class RiskDataSetManager(models.Manager):
 
         return general_point, subpoints
 
-    def get_or_create(self, *args, **kwargs):
+    def check_or_create(self, *args, **kwargs):
         analyze_now = kwargs.get('analyze_now', True)
 
         args, kwargs = self.__nan_to_none(args, kwargs)

@@ -67,18 +67,18 @@ class ImportRiskDataset(BaseImport):
             analyze_now = row.get('Analiz Et', True)
 
             bakiye = row.get('Bakiye')
-            obj, pts = DataSetModel.objects.get_or_create_account(musteri=musteri, limit=limit, teminat_durumu=teminat_durumu,
-                                                                  teminat_tutari=teminat_tutari,
-                                                                  vade=vade, vade_asimi_ortalamasi=vade_asimi_ortalamasi,
-                                                                  odeme_sikligi=odeme_sikligi,
-                                                                  ort_siparis_tutari_1ay=ort_siparis_tutari_1ay,
-                                                                  ort_siparis_tutari_12ay=ort_siparis_tutari_12ay,
-                                                                  iade_yuzdesi_1=iade_yuzdesi_1,
-                                                                  iade_yuzdesi_12=iade_yuzdesi_12,
-                                                                  ort_gecikme_gun_sayisi=ort_gecikme_gun_sayisi,
-                                                                  ort_gecikme_gun_bakiyesi=ort_gecikme_gun_bakiyesi,
-                                                                  bakiye=bakiye,
-                                                                  analyze_now=analyze_now)
+            obj, pts = DataSetModel.objects.check_or_create(musteri=musteri, limit=limit, teminat_durumu=teminat_durumu,
+                                                            teminat_tutari=teminat_tutari,
+                                                            vade=vade, vade_asimi_ortalamasi=vade_asimi_ortalamasi,
+                                                            odeme_sikligi=odeme_sikligi,
+                                                            ort_siparis_tutari_1ay=ort_siparis_tutari_1ay,
+                                                            ort_siparis_tutari_12ay=ort_siparis_tutari_12ay,
+                                                            iade_yuzdesi_1=iade_yuzdesi_1,
+                                                            iade_yuzdesi_12=iade_yuzdesi_12,
+                                                            ort_gecikme_gun_sayisi=ort_gecikme_gun_sayisi,
+                                                            ort_gecikme_gun_bakiyesi=ort_gecikme_gun_bakiyesi,
+                                                            bakiye=bakiye,
+                                                            analyze_now=analyze_now)
             if analyze_now:
                 for k, v in pts.items():
                     RiskDataSetPoints.objects.update_or_create(risk_dataset=obj, variable=k, point=v)

@@ -101,7 +101,7 @@ class ImportExternalData:
         else:
             print("Check account yuklenmis")
 
-    def vergi_yukle(self):
+    def vergi_yukle(self, create_dummy=True):
         if VergiBorcuListesi.objects.all().__len__() == 0:
             print("Vergi borçlularını yükleyelim")
             from checkaccount.models.models import CheckAccount
@@ -118,22 +118,25 @@ class ImportExternalData:
                 faaliyet_konusu = row.get('Esas Faaliyet Konusu')
                 borcu = row.get('Vergi Borcu')
 
-                acc = self.get_or_create_account(adsoyad, taxpayer_number=kno)
+                acc = self.get_or_create_account(adsoyad, create_dummy, taxpayer_number=kno)
                 try:
-                    VergiBorcuListesi.objects.get_or_create_account(vergi_departmani=daire,
-                                                                    borc_sahibi=acc,
-                                                                    esas_faaliyet_konusu=faaliyet_konusu,
-                                                                    borc_miktari=borcu)
+                    VergiBorcuListesi.objects.check_or_create(vergi_departmani=daire,
+                                                              borc_sahibi=acc,
+                                                              esas_faaliyet_konusu=faaliyet_konusu,
+                                                              borc_miktari=borcu)
                 except Exception as err:
                     print(f"Vergi borçluları yüklenirken hata : {str(err)}")
 
             print("Vergi borçluları tarama yükleme tamamlandı")
 
-    def get_or_create_account(self, firm_full_name, **kwargs):
+    def get_or_create_account(self, firm_full_name, create_dummy, **kwargs):
         try:
             return CheckAccount.objects.get(firm_full_name=firm_full_name, **kwargs)
         except CheckAccount.DoesNotExist:
-            return CheckAccount.dummy_creator.check_or_create_dummy(firm_full_name, **kwargs)
+            if create_dummy:
+                return CheckAccount.dummy_creator.check_or_create_dummy(firm_full_name, **kwargs)
+            else:
+                return None
 
     def sgk_yukle(self):
         if SGKBorcuListesi.objects.all().__len__() == 0:

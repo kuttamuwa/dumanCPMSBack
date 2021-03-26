@@ -2,13 +2,14 @@ from django.db import models
 
 from appconfig.errors.domain.validator import DomainCannotExceeds100
 from appconfig.errors.subtype.validator import SubtypeCannotExceeds100
-from checkaccount.models.models import CheckAccount
 
 
 class VergiBorcuManager(models.Manager):
-    def get_or_create(self, *args, **kwargs):
-        # kwargs['borc_sahibi'] = CheckAccount.dummy_creator.check_or_create_dummy(kwargs['borc_sahibi'])
-        return super(VergiBorcuManager, self).get_or_create(*args, **kwargs)
+    def check_or_create(self, borc_sahibi, *args, **kwargs):
+        try:
+            return self.get(borc_sahibi=borc_sahibi)
+        except self.model.DoesNotExist:
+            return self.create(borc_sahibi=borc_sahibi, *args, **kwargs)
 
     def create(self, *args, **kwargs):
         return super(VergiBorcuManager, self).create(*args, **kwargs)
