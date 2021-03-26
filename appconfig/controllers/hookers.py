@@ -136,7 +136,8 @@ class ImportExternalData:
             if create_dummy:
                 return CheckAccount.dummy_creator.check_or_create_dummy(firm_full_name, **kwargs)
             else:
-                return None
+                return CheckAccount.objects.create(firm_full_name=firm_full_name,
+                                                   **kwargs)
 
     def sgk_yukle(self, create_dummy=False):
         if SGKBorcuListesi.objects.all().__len__() == 0:
