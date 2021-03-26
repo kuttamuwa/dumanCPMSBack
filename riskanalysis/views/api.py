@@ -294,9 +294,6 @@ class CardsAPI(viewsets.ReadOnlyModelViewSet):
         elif dtype == 'u':
             return self.get_uyarilar(**kwargs)
 
-    def list_checks(self, request, *args, **kwargs):
-        pass
-
     def retrieve_checks(self):
         qparam = self.request.query_params
         pk = self.request.parser_context.get('kwargs').get('pk')

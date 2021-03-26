@@ -2,6 +2,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
 
 from checkaccount.models.models import CheckAccount, SysPersonnel, Sectors, Cities, Districts
 from checkaccount.models.serializers import CheckAccountSerializer
@@ -28,13 +29,16 @@ class CheckAccountAPI(viewsets.ModelViewSet):
 
     http_method_names = ['get', 'post', 'head', 'put', 'update', 'patch', 'delete']
 
-    def get_queryset(self):
-        qset = super(CheckAccountAPI, self).get_queryset()
-        pk = self.request.query_params.get('pk')
-        if pk:
-            qset = qset.filter(pk=pk)
+    def retrieve(self, request, *args, **kwargs):
+        return super(CheckAccountAPI, self).retrieve(request, *args, **kwargs)
 
-        return qset
+    def list(self, request, *args, **kwargs):
+        qparams = self.request.query_params
+        qparams = {k: v for k, v in qparams.items() if k not in ('encoding',)}
+
+        self.queryset = self.queryset.filter(**qparams)
+
+        return super(CheckAccountAPI, self).list(request, *args, **kwargs)
 
     @staticmethod
     def fill_some_fields_auto(request):
