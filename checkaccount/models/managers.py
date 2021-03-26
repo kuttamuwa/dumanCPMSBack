@@ -116,3 +116,8 @@ class DummyCheckAccountCreator(BaseDummyCreator):
             else:
                 return self.create(firm_full_name=firm_full_name, taxpayer_number=taxpayer_number,
                                    *args, **kwargs)
+
+        except self.model.MultipleObjectsReturned:
+            obj = self.filter(taxpayer_number=taxpayer_number)
+            print("İki eşleşen bulundu ! ")
+            return obj[0]

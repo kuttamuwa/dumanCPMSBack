@@ -118,7 +118,12 @@ class ImportExternalData:
                 faaliyet_konusu = row.get('Esas Faaliyet Konusu')
                 borcu = row.get('Vergi Borcu')
 
-                acc = self.get_or_create_account(adsoyad, create_dummy, taxpayer_number=kno)
+                acc = CheckAccount.dummy_creator.check_or_create_dummy(
+                    firm_full_name=adsoyad,
+                    taxpayer_number=kno,
+                    create_dummy=create_dummy
+                )
+
                 try:
                     VergiBorcuListesi.objects.check_or_create(vergi_departmani=daire,
                                                               borc_sahibi=acc,
@@ -129,19 +134,6 @@ class ImportExternalData:
 
             print("Vergi borçluları tarama yükleme tamamlandı")
 
-    def get_or_create_account(self, firm_full_name, create_dummy, **kwargs):
-        try:
-            acc = CheckAccount.objects.get(firm_full_name=firm_full_name, **kwargs)
-            print(f"eşleşme bulundu : {acc}")
-            return acc
-
-        except CheckAccount.DoesNotExist:
-            if create_dummy:
-                return CheckAccount.dummy_creator.check_or_create_dummy(firm_full_name, **kwargs)
-            else:
-                return CheckAccount.objects.create(firm_full_name=firm_full_name,
-                                                   **kwargs)
-
     def sgk_yukle(self, create_dummy=False):
         if SGKBorcuListesi.objects.all().__len__() == 0:
             print("SGK borçlularını yükleyelim")
@@ -149,8 +141,12 @@ class ImportExternalData:
             for index, row in df.iterrows():
                 kimlikno = row.get('Kimlik No')
                 adsoyad = row.get('Ad Soyad')
-                borc_sahibi = self.get_or_create_account(firm_full_name=adsoyad,
-                                                         create_dummy=create_dummy)
+                borc_sahibi = CheckAccount.dummy_creator.check_or_create_dummy(
+                    firm_full_name=adsoyad,
+                    taxpayer_number=kimlikno,
+                    create_dummy=create_dummy
+                )
+
                 borcu = row.get('Borç Tutarı')
                 try:
                     SGKBorcuListesi.objects.get_or_create(

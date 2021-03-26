@@ -40,7 +40,7 @@ class ImportRiskDataset(BaseImport):
         df.replace(nan, None, inplace=True)
         for index, row in df.iterrows():
             # adsoyad = row.get('Müşteri')
-            taxpayer_number = row.get('VKNTC')
+            taxpayer_number = int(row.get('VKNTC'))
 
             row = row.drop(['VKNTC'], axis=0)
 

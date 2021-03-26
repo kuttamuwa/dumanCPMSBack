@@ -29,3 +29,5 @@ class AppconfigConfig(AppConfig):
         if not DEBUG:
             self.import_all_internal_data()
             self.import_all_external_data()
+
+            print("İç ve Dış verilerin yüklenmesi taranması tamamlandı")
