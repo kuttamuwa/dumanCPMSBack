@@ -3,3 +3,5 @@
 /appconfig/migrations/
 /dashboard/migrations/
 /dumanCPMSRevise/settings.py
+/.idea/
+/duman-cpms/node_modules
