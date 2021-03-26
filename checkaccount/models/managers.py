@@ -104,8 +104,15 @@ class DummyCheckAccountCreator(BaseDummyCreator):
         print(f"Sanal hesap üretildi : {obj.firm_full_name}")
         return obj
 
-    def check_or_create_dummy(self, adsoyad, *args, **kwargs):
+    def check_or_create_dummy(self, firm_full_name, taxpayer_number, create_dummy=False, *args, **kwargs):
         try:
-            return self.get(firm_full_name=adsoyad)
+            obj = self.get(taxpayer_number=taxpayer_number)
+            print(f"Eşleşen bulundu : {firm_full_name}")
+            return obj
+
         except models.ObjectDoesNotExist:
-            return self.gen_user(*args, **kwargs)
+            if create_dummy:
+                return self.gen_user(*args, **kwargs)
+            else:
+                return self.create(firm_full_name=firm_full_name, taxpayer_number=taxpayer_number,
+                                   *args, **kwargs)

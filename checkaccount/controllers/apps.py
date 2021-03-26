@@ -31,5 +31,7 @@ class CheckaccountConfig(AppConfig):
         if not DEBUG:
             self.import_il_ilce()
             self.import_sys_personnels()
-            self.import_account_data()
             self.import_sector_data()
+            self.import_account_data()
+
+            print("Check account uygulaması ve test verileri yüklendi")

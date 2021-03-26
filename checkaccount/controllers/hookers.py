@@ -84,7 +84,13 @@ class ImportAccounts(BaseImport):
     @staticmethod
     def _save(df):
         for index, row in df.iterrows():
-            CheckAccount.objects.get_or_create_account(**dict(row))
+            firm_full_name = row.get('firm_full_name')
+            taxpayer_number = row.get('taxpayer_number')
+            row = row.drop(['firm_full_name', 'taxpayer_number'], axis=0)
+
+            CheckAccount.dummy_creator.check_or_create_dummy(firm_full_name, taxpayer_number,
+                                                             create_dummy=False,
+                                                             **dict(row))
 
     def test_runforme(self):
         if not DEBUG:

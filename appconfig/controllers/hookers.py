@@ -131,7 +131,10 @@ class ImportExternalData:
 
     def get_or_create_account(self, firm_full_name, create_dummy, **kwargs):
         try:
-            return CheckAccount.objects.get(firm_full_name=firm_full_name, **kwargs)
+            acc = CheckAccount.objects.get(firm_full_name=firm_full_name, **kwargs)
+            print(f"eşleşme bulundu : {acc}")
+            return acc
+
         except CheckAccount.DoesNotExist:
             if create_dummy:
                 return CheckAccount.dummy_creator.check_or_create_dummy(firm_full_name, **kwargs)
@@ -180,5 +183,5 @@ class ImportExternalData:
     def runforme(self):
         if not DEBUG:
             self.ca_check()
-            self.vergi_yukle()
+            self.vergi_yukle(create_dummy=False)
             self.sgk_yukle(create_dummy=False)

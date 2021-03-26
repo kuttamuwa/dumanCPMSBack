@@ -416,7 +416,7 @@ class CardsAPI(viewsets.ReadOnlyModelViewSet):
         return self.adh_serializer(datasets)
 
     def son_eklenen_musteriler(self, **kwargs):
-        count = int(kwargs.get('count'))
+        count = int(kwargs.get('count', 10))
 
         data = DataSetModel.objects.order_by('-created_date').values('limit',
                                                                      'teminat_durumu',
@@ -427,7 +427,7 @@ class CardsAPI(viewsets.ReadOnlyModelViewSet):
              'Teminat Durumu': k.get('teminat_durumu')}
             for k in data
         ]
-        return data
+        return _dict
 
     def get_vergi_yuzsuzleri(self, match=True):
         """

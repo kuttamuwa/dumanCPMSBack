@@ -39,7 +39,14 @@ class ImportRiskDataset(BaseImport):
     def _save(df):
         df.replace(nan, None, inplace=True)
         for index, row in df.iterrows():
-            musteri = CheckAccount.dummy_creator.check_or_create_dummy(adsoyad=row.get('Müşteri'))
+            # adsoyad = row.get('Müşteri')
+            taxpayer_number = row.get('VKNTC')
+
+            row = row.drop(['VKNTC'], axis=0)
+
+            musteri = CheckAccount.dummy_creator.check_or_create_dummy(firm_full_name=None,
+                                                                       taxpayer_number=taxpayer_number,
+                                                                       create_dummy=True)
             limit = row.get('Limit')
 
             # teminat = row.get(
