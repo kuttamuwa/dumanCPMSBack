@@ -408,9 +408,11 @@ class CardsAPI(viewsets.ReadOnlyModelViewSet):
         return self.adh_serializer(datasets)
 
     def son_eklenen_musteriler(self, **kwargs):
-        data = DataSetModel.objects.filter(**kwargs).order_by('-created_date').values('limit',
-                                                                                      'teminat_durumu',
-                                                                                      'musteri__firm_full_name')
+        count = int(kwargs.get('count'))
+
+        data = DataSetModel.objects.order_by('-created_date').values('limit',
+                                                                     'teminat_durumu',
+                                                                     'musteri__firm_full_name')[:count]
         _dict = [
             {'Müşteri': k.get('musteri__firm_full_name'),
              'Tanımlanan Limit': k.get('limit'),
