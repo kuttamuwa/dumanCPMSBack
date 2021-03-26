@@ -138,13 +138,15 @@ class ImportExternalData:
             else:
                 return None
 
-    def sgk_yukle(self):
+    def sgk_yukle(self, create_dummy=False):
         if SGKBorcuListesi.objects.all().__len__() == 0:
             print("SGK borçlularını yükleyelim")
             df = self.read_from_excel(self.sgkborcu)
             for index, row in df.iterrows():
                 kimlikno = row.get('Kimlik No')
-                borc_sahibi = self.get_or_create_account(row.get('Ad Soyad'))
+                adsoyad = row.get('Ad Soyad')
+                borc_sahibi = self.get_or_create_account(firm_full_name=adsoyad,
+                                                         create_dummy=create_dummy)
                 borcu = row.get('Borç Tutarı')
                 try:
                     SGKBorcuListesi.objects.get_or_create(
@@ -178,4 +180,4 @@ class ImportExternalData:
         if not DEBUG:
             self.ca_check()
             self.vergi_yukle()
-            self.sgk_yukle()
+            self.sgk_yukle(create_dummy=False)
