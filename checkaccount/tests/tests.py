@@ -9,7 +9,7 @@ from checkaccount.models.models import SysDepartments, SysPersonnel, Sectors
 class CityDistrictsTest(TestCase):
     @staticmethod
     def test_runforme():
-        ImportCityDistrict().test_runforme()
+        ImportCityDistrict().runforme()
 
 
 class SysDepartmentsTest(TestCase):

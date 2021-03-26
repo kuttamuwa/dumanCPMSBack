@@ -10,7 +10,7 @@ class CheckaccountConfig(AppConfig):
     def import_il_ilce():
         # il ilçe yükleme
         from checkaccount.controllers.hookers import ImportCityDistrict
-        ImportCityDistrict().test_runforme()
+        ImportCityDistrict().runforme()
 
     @staticmethod
     def import_sys_personnels():

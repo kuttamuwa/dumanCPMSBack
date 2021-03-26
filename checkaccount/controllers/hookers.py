@@ -43,11 +43,7 @@ class ImportCityDistrict(BaseImport):
     def delete_cities(self):
         Cities.objects.all().delete()
 
-    def test_runforme(self, load_again=True):
-        if load_again:
-            self.delete_districts()
-            self.delete_cities()
-
+    def runforme(self):
         if not DEBUG:
             if len(Districts.objects.all()) == 0:
                 df = self.read_from_excel()

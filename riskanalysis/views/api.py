@@ -255,13 +255,18 @@ class CardsAPI(viewsets.ReadOnlyModelViewSet):
 
     * Kullanım
     pk verilirse tekil müşterinin, verilmezse 5 müşterinin kaydı getirilir. Daha fazla kayıt isteniyorsa
-    count parametresi belirtilmeli.
+    count parametresi belirtilmeli. pk ek parametre değildir, ..dashboard/12/?dtype=l gibi gitmeli.
+
+    Limit aşımında ve ADH'de limiti aşan ve vadesi aşanlar default filtrelenir. İstemiyorsanız hepsi=True
+    göndermelisiniz.
 
         Limit aşımları: dtype=l -> Tekil de çoğul da kullanılabilir. Ör:
             ..:8000/riskanalysis/api/dashboard/12/?dtype=l
             ..:8000/riskanalysis/api/dashboard/?dtype=l
 
         Alacak Devir hızı: dtype=adh -> Tekil + Çoğul. Ör:
+            ..:8000/riskanalysis/api/dashboard/?dtype=adh
+            ..:8000/riskanalysis/api/dashboard/686/?dtype=adh
 
     """
     queryset = DataSetModel.objects.all()
@@ -271,12 +276,12 @@ class CardsAPI(viewsets.ReadOnlyModelViewSet):
         CardsPermissions
     ]
 
-    def param_parser(self, dtype, multi=False, pk=None, **kwargs):
+    def param_parser(self, dtype, multi=False, pk=None, hepsi=False, **kwargs):
         if dtype == 'l':
-            return self.limit_bakiye(dataset_id=pk, multi=multi, **kwargs)
+            return self.limit_bakiye(dataset_id=pk, multi=multi, hepsi=hepsi, **kwargs)
 
         elif dtype == 'adh':
-            return self.adh(dataset_id=pk, multi=multi, **kwargs)
+            return self.adh(dataset_id=pk, multi=multi, hepsi=hepsi, **kwargs)
 
         elif dtype == 'ym':
             return self.son_eklenen_musteriler(**kwargs)
@@ -294,11 +299,13 @@ class CardsAPI(viewsets.ReadOnlyModelViewSet):
     def _init_values(self):
         qparam, pk, dtype = self.retrieve_checks()
         other_params = {k: v for k, v in qparam.items() if k not in ('dtype', 'pk')}
+        other_params['hepsi'] = bool(other_params.get('hepsi', False))
 
-        return qparam, int(pk), dtype, other_params
+        return qparam, pk, dtype, other_params
 
     def retrieve(self, request, *args, **kwargs):
         qparam, pk, dtype, other_params = self._init_values()
+        pk = int(pk)
 
         if dtype:
             result = self.param_parser(dtype=dtype, pk=pk, **other_params)
@@ -321,10 +328,10 @@ class CardsAPI(viewsets.ReadOnlyModelViewSet):
     http_method_names = ['get', 'head']
 
     @staticmethod
-    def limit_serializer(*args):
+    def limit_serializer(datasets):
         _list = []
-        for i in args:
-            musteri, limit, bakiye = i.get('musteri__firm_full_name'), i.get('limit'), i.get('bakiye')
+        for i in datasets:
+            musteri, limit, bakiye = i.musteri.firm_full_name, i.limit, i.bakiye
             _dict = {
                 'Müşteri': musteri,
                 'Tanımlanan Limit': limit,
@@ -336,11 +343,12 @@ class CardsAPI(viewsets.ReadOnlyModelViewSet):
         return _list
 
     @staticmethod
-    def adh_serializer(*args):
+    def adh_serializer(datasets):
         _list = []
-        for i in args:
+
+        for i in datasets:
             adh_point = RiskDataSetPoints.objects.get(risk_dataset=i, variable='Devir Günü').point
-            musteri, general_point = i.get('musteri__firm_full_name'), i.get('general_point')
+            musteri, general_point = i.musteri.firm_full_name, i.general_point
 
             _dict = {
                 'Müşteri': musteri,
@@ -351,55 +359,53 @@ class CardsAPI(viewsets.ReadOnlyModelViewSet):
 
         return _list
 
-    def limit_bakiye(self, dataset_id, multi=False, **kwargs):
+    def limit_bakiye(self, dataset_id, multi=False, hepsi=False, **kwargs):
         """
         Müşteri, Limit ve Limit - Bakiye
+        :param hepsi:
         :param multi: List or retrieve
         :param dataset_id:
         :return:
         """
         if multi:
             count = int(kwargs.get('count', 5))
-            dataset = DataSetModel.objects.limit_asimi().values('musteri__firm_full_name',
-                                                                'limit',
-                                                                'bakiye')[:count]
+            if hepsi:
+                dataset = DataSetModel.objects.all()[:count]
+            else:
+                dataset = DataSetModel.objects.limit_asimi()[:count]
 
         else:
-            dataset = DataSetModel.objects.get(pk=dataset_id, **kwargs)
-            dataset = {
-                'musteri__firm_full_name': dataset.musteri.firm_full_name,
-                'limit': dataset.limit,
-                'bakiye': dataset.bakiye
-            }
+            try:
+                dataset = [DataSetModel.objects.get(pk=dataset_id, **kwargs)]
+            except DataSetModel.DoesNotExist:
+                raise APINoDataException
 
         return self.limit_serializer(dataset)
 
-    def adh(self, dataset_id: int, multi=False, comp='dhself', **kwargs):
+    def adh(self, dataset_id: int, multi=False, comp='dhself', hepsi=False, **kwargs):
         """
         Müşteri, ADH Skoru, Risk Durumu
+        :param hepsi: Hepsi mi getirilsin yoksa sadece aşım yapanlar mı?
         :param comp: Kendi ile mi karşılaştıralım başkalarıyla mı? -> dhself || dhothers
         :param multi: List || Retrieve
         :param dataset_id:
-        :param ay: 1 veya 12 olabilir
         :return:
         """
 
         if multi:
             count = int(kwargs.get('count', 5))
-            dataset = DataSetModel.objects.asim_yapanlar(dtype=comp).values('musteri__firm_full_name',
-                                                                            'general_point')[:count]
+            if hepsi:
+                datasets = DataSetModel.objects.all()[:count]
+            else:
+                datasets = DataSetModel.objects.asim_yapanlar(dtype=comp).all()[:count]
         else:
             try:
-                dataset = DataSetModel.objects.asim_yapanlar(dtype=comp).get(pk=dataset_id, **kwargs)
-                dataset = {
-                    'musteri__firm_full_name': dataset.musteri.firm_full_name,
-                    'general_point': dataset.general_point
-                }
+                datasets = [DataSetModel.objects.asim_yapanlar(dtype=comp).get(pk=dataset_id, **kwargs)]
 
             except DataSetModel.DoesNotExist:
                 raise APINoDataException
 
-        return self.adh_serializer(dataset)
+        return self.adh_serializer(datasets)
 
     def son_eklenen_musteriler(self, **kwargs):
         data = DataSetModel.objects.filter(**kwargs).order_by('-created_date').values('limit',
