@@ -5,6 +5,7 @@ from numpy import nan
 from checkaccount.models.models import CheckAccount
 from dumanCPMSRevise.settings import BASE_DIR, DEBUG
 from riskanalysis.models.models import DataSetModel, RiskDataSetPoints
+from riskanalysis.views.api import AnalyzeBaseError
 
 
 class BaseImport:
@@ -99,3 +100,15 @@ class ImportRiskDataset(BaseImport):
             self._save(df)
 
             print("Imported risk datasets")
+
+class AnalyzeRiskDataset():
+    @classmethod
+    def analyze_all(cls):
+        try:
+            DataSetModel.objects.analyze_check_or_create()
+            print("Risk Dataset verilerinin tamamı tarandı ve analiz puanları güncellendi ")
+
+        except Exception as err:
+             err = f'{AnalyzeBaseError.default_detail} \n Kaynak Hata : {err} + \n Ilgili obje : {rd} + ' 
+             print(f"Lan hata aldık ! : {err}")
+             raise AnalyzeBaseError(default_detail=err)

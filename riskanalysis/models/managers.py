@@ -73,11 +73,18 @@ class RiskDataSetManager(models.Manager):
         return teminat_durumu
 
     def create(self, *args, **kwargs):
-        kwargs['musteri'] = CheckAccount.dummy_creator.check_or_create_dummy(*args, **kwargs)
+        kwargs['musteri'] = CheckAccount.dummy_creator.check_or_create_dummy(create_dummy=True, *args, **kwargs)
         kwargs['teminat_durumu'] = self.teminat_check(kwargs.get('teminat_durumu'),
                                                       kwargs.get('teminat_tutari'))
 
         return super(RiskDataSetManager, self).create(*args, **kwargs)
+    
+    def analyze_check_or_create(self):
+        for rd in self.filter(general_point__isnull=True):
+            if rd.general_point is None:
+                self.analyze_me_and_save(rd=rd)
+        
+        print("Tüm risk verileri tarandı ve olmayanların analiz puanları güncellendi !")
 
     @staticmethod
     def __nan_to_none(args, kwargs):
@@ -87,11 +94,16 @@ class RiskDataSetManager(models.Manager):
 
         return args, kwargs
 
-    def analyze_(self, rd):
+    def analyze_me_and_save(self, rd):
+        general_point, _ = self._analyze(rd, get_subpoints=False)
+        return self.update(general_point=general_point)
+
+    def _analyze(self, rd, get_subpoints=True, **kwargs):
         print(f"{rd.musteri.firm_full_name} analiz ediliyor..")
 
+        subpoints = None
         rp = AnalyzeManager(riskdataset=rd)
-        general_point, subpoints = rp.analyze(get_subpoints=True)
+        general_point = rp.analyze(get_subpoints=get_subpoints)
 
         return general_point, subpoints
 
@@ -103,7 +115,7 @@ class RiskDataSetManager(models.Manager):
         obj, status = super(RiskDataSetManager, self).get_or_create(*args, **kwargs)
 
         if analyze_now:
-            general_point, pts = self.analyze_(obj)
+            general_point, pts = self._analyze(obj, **kwargs)
             obj.general_point = general_point
             obj.save()
 

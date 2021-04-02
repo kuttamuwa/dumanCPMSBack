@@ -67,6 +67,10 @@ class CheckAccount(BaseModel):
     dummy_creator = DummyCheckAccountCreator()
     objects = models.Manager()
 
+    dummy = models.BooleanField(verbose_name='dummy', name='dummy', null=True, 
+    help_text='Eğer eşleşen bir müşteriniz yoksa sizin için dummy (sahte, sanal) bir kullanıcı oluşturabiliriz. Varsayılan değer "True" olarak kullanılacak, yoksa hata verir.',
+    default=True)
+
     firm_type = models.CharField(max_length=20, choices=[('Tüzel Kişilik', 'Tüzel Kişilik'),
                                                          ('Şahıs İşletmesi', 'Şahıs İşletmesi')],
                                  verbose_name='Firma Tipi', help_text='Şahıs mı Tüzel mi olduğunu giriniz',

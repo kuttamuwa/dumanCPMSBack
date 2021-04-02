@@ -254,8 +254,8 @@ class CardsAPI(viewsets.ReadOnlyModelViewSet):
         * Uyarılar
 
     * Kullanım
-    pk verilirse tekil müşterinin, verilmezse 5 müşterinin kaydı getirilir. Daha fazla kayıt isteniyorsa
-    count parametresi belirtilmeli. pk ek parametre değildir, ..dashboard/12/?dtype=l gibi gitmeli.
+    pk verilirse tekil müşterinin, verilmezse count (varsayılan değer 5 olmak üzere) parametresi kadar müşterinin kaydı getirilir. Değiştirmek için isteklere ekleyiniz. Ör: &count=20 
+    PK ek parametre değildir ..dashboard/12/?dtype=l gibi gitmeli.
 
     Limit aşımında ve ADH'de limiti aşan ve vadesi aşanlar default filtrelenir. İstemiyorsanız hepsi=True
     göndermelisiniz.
@@ -270,6 +270,10 @@ class CardsAPI(viewsets.ReadOnlyModelViewSet):
 
         Uyarı listesi: dtype=u -> Çoğul gelecektir. Ör:
             ..:8000/riskanalysis/api/dashboard/?dtype=u
+
+        Son eklenen müşteriler: dtype=ym -> Çoğul gelecektir. Ör:
+            ..:8000/riskanalysis/api/dashboard/?dtpye=ym
+            
 
     """
     serializer_class = CardSerializer
@@ -566,3 +570,10 @@ class APIUsageError(APIException):
 class APINoDataException(APIException):
     status_code = 500
     default_detail = 'Verdiğiniz id ile bir risk dataset objesi bulunamamıştır !'
+
+
+class AnalyzeBaseError(APIException):
+    status_code = 500
+    default_detail = 'Verinizi analiz ederken bir hatayla karşılaşıldı ! '
+
+    

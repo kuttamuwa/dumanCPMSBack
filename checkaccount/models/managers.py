@@ -94,6 +94,8 @@ class DummyCheckAccountCreator(BaseDummyCreator):
         kwargs['web_url'] = self.gen_web_url()
         kwargs['email_addr'] = self.gen_email_addr()
 
+        # set this one is dummy or not
+        kwargs['dummy'] = kwargs.pop('create_dummy')
         return kwargs
 
     def gen_user(self, firm_type='Şahıs İşletmesi', *args, **kwargs):
@@ -104,7 +106,7 @@ class DummyCheckAccountCreator(BaseDummyCreator):
         print(f"Sanal hesap üretildi : {obj.firm_full_name}")
         return obj
 
-    def check_or_create_dummy(self, firm_full_name, taxpayer_number, create_dummy=False, *args, **kwargs):
+    def check_or_create_dummy(self, firm_full_name=None, taxpayer_number=None, create_dummy=False, *args, **kwargs):
         try:
             obj = self.get(taxpayer_number=taxpayer_number)
             print(f"Eşleşen bulundu : {firm_full_name}")
@@ -112,12 +114,7 @@ class DummyCheckAccountCreator(BaseDummyCreator):
 
         except models.ObjectDoesNotExist:
             if create_dummy:
-                return self.gen_user(*args, **kwargs)
+                return self.gen_user(firm_full_name=firm_full_name, taxpayer_number=taxpayer_number, create_dummy=True)
             else:
                 return self.create(firm_full_name=firm_full_name, taxpayer_number=taxpayer_number,
                                    *args, **kwargs)
-
-        except self.model.MultipleObjectsReturned:
-            obj = self.filter(taxpayer_number=taxpayer_number)
-            print("İki eşleşen bulundu ! ")
-            return obj[0]

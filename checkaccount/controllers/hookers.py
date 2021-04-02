@@ -94,11 +94,13 @@ class ImportAccounts(BaseImport):
 
     def test_runforme(self):
         if not DEBUG:
-            if len(CheckAccount.objects.all()) == 0:
-                df = self.read_from_excel()
-                self._save(df)
+            df = self.read_from_excel()
 
-                print("Cari hesaplar yüklendi")
+            # dummy olduklarını belirtelim
+            df['dummy'] = True
+            self._save(df)
+
+            print("Cari hesaplar yüklendi")
 
 
 class ImportSectors(BaseImport):
