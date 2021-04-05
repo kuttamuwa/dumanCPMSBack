@@ -82,7 +82,7 @@ class RiskDataSetManager(models.Manager):
     def analyze_check_or_create(self):
         for rd in self.filter(general_point__isnull=True):
             if rd.general_point is None:
-                self.analyze_me_and_save(rd=rd)
+                self.analyze_me_and_save(rd)
         
         print("Tüm risk verileri tarandı ve olmayanların analiz puanları güncellendi !")
 
