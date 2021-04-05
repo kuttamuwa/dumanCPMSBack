@@ -296,7 +296,7 @@ class AnalyzeManager(BaseAnalyze):
         if analiz_karari:
             pts = self.calc_all_pts(rd=rd)
             general_point = self.calc_general_point(**pts)
-            RiskDataSetPoints.objects().get_or_create(risk_dataset=rd, point=general_point, variable='Genel Puan')
+            RiskDataSetPoints.objects.get_or_create(risk_dataset=rd, point=general_point, variable='Genel Puan')
 
             if get_subpoints:
                 return general_point, pts
@@ -405,6 +405,7 @@ class AnalyzeManager(BaseAnalyze):
 
     def calc_all_pts(self, **kwargs):
         from riskanalysis.models.models import RiskDataSetPoints
+
         pts_satis_ort = self.karsilastirma_son_12ay_satis_ort()
         pts_iade_yuzdesi = self.karsilastirma_son_12_ay_iade_yuzdesi()
         pts_gecikme_bakiye = self.ort_gecikme_gun_bakiyesi()
@@ -414,12 +415,12 @@ class AnalyzeManager(BaseAnalyze):
 
         if kwargs.get('rd'):
             rd = kwargs['rd']
-            RiskDataSetPoints.objects().get_or_create(risk_dataset=rd, point=pts_satis_ort, variable='Satış Ortalama')
-            RiskDataSetPoints.objects().get_or_create(risk_dataset=rd, point=pts_satis_ort, variable='İade Yüzde')
-            RiskDataSetPoints.objects().get_or_create(risk_dataset=rd, point=pts_satis_ort, variable='Gecikme Bakiye')
-            RiskDataSetPoints.objects().get_or_create(risk_dataset=rd, point=pts_satis_ort, variable='Gecikme Sayı')
-            RiskDataSetPoints.objects().get_or_create(risk_dataset=rd, point=pts_satis_ort, variable='Devir Günü')
-            RiskDataSetPoints.objects().get_or_create(risk_dataset=rd, point=pts_satis_ort, variable='Teminat Riski')
+            RiskDataSetPoints.objects.get_or_create(risk_dataset=rd, point=pts_satis_ort, variable='Satış Ortalama')
+            RiskDataSetPoints.objects.get_or_create(risk_dataset=rd, point=pts_satis_ort, variable='İade Yüzde')
+            RiskDataSetPoints.objects.get_or_create(risk_dataset=rd, point=pts_satis_ort, variable='Gecikme Bakiye')
+            RiskDataSetPoints.objects.get_or_create(risk_dataset=rd, point=pts_satis_ort, variable='Gecikme Sayı')
+            RiskDataSetPoints.objects.get_or_create(risk_dataset=rd, point=pts_satis_ort, variable='Devir Günü')
+            RiskDataSetPoints.objects.get_or_create(risk_dataset=rd, point=pts_satis_ort, variable='Teminat Riski')
 
         return {
             'Son 12 Ay Satış Ortalamasından Sapma': pts_satis_ort,
