@@ -404,6 +404,7 @@ class AnalyzeManager(BaseAnalyze):
         return self.get_or_create(**kwargs)[0]
 
     def calc_all_pts(self, **kwargs):
+        from riskanalysis.models.models import RiskDataSetPoints
         pts_satis_ort = self.karsilastirma_son_12ay_satis_ort()
         pts_iade_yuzdesi = self.karsilastirma_son_12_ay_iade_yuzdesi()
         pts_gecikme_bakiye = self.ort_gecikme_gun_bakiyesi()
