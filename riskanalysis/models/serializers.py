@@ -12,8 +12,8 @@ class DatasetSerializerGeneral(serializers.ModelSerializer):
 
 
 class DatasetSerializerExclusive(serializers.ModelSerializer):
-    musteri = serializers.CharField(source='musteri.firm_full_name')
-    
+    musteri = serializers.CharField(source='musteri.firm_full_name', read_only=True)
+
     class Meta:
         model = DataSetModel
         fields = '__all__'
