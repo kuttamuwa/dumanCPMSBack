@@ -80,9 +80,8 @@ class RiskDataSetManager(models.Manager):
         return super(RiskDataSetManager, self).create(*args, **kwargs)
     
     def analyze_check_or_create(self):
-        for rd in self.filter(general_point__isnull=True):
-            if rd.general_point is None:
-                self.analyze_me_and_save(rd)
+        for rd in self.all():
+            self.analyze_me_and_save(rd)
         
         print("Tüm risk verileri tarandı ve olmayanların analiz puanları güncellendi !")
 
@@ -286,7 +285,7 @@ class AnalyzeManager(BaseAnalyze):
 
         return general_point
 
-    def analyze(self, get_subpoints=False):
+    def analyze(self, rd, get_subpoints=False):
         self.kontrol()
         analiz_karari = self.analiz_karari()
 
@@ -294,8 +293,10 @@ class AnalyzeManager(BaseAnalyze):
         analiz_karari = True
 
         if analiz_karari:
-            pts = self.calc_all_pts()
+            pts = self.calc_all_pts(rd=rd)
             general_point = self.calc_general_point(**pts)
+            RiskDataSetPoints.objects().get_or_create(risk_dataset=rd, point=general_point, variable='Genel Puan')
+
             if get_subpoints:
                 return general_point, pts
             else:
@@ -396,15 +397,27 @@ class AnalyzeManager(BaseAnalyze):
         pts = self.get_points_from_value(teminat_limit_risk_kars_seviyesi, pnt_df)
         pts = pts * domain_point
 
-        return pts
+        return pts 
+    
+    def create_each(**kwargs):
+        return self.get_or_create(**kwargs)[0]
 
-    def calc_all_pts(self):
+    def calc_all_pts(self, **kwargs):
         pts_satis_ort = self.karsilastirma_son_12ay_satis_ort()
         pts_iade_yuzdesi = self.karsilastirma_son_12_ay_iade_yuzdesi()
         pts_gecikme_bakiye = self.ort_gecikme_gun_bakiyesi()
         pts_gecikme_sayisi = self.ort_gecikme_gun_sayisi()
         pts_devir_gunu = self.devir_gunu()
         pts_teminat_riski = self.karsilastirma_teminat_limit()
+
+        if kwargs.get('rd'):
+            rd = kwargs['rd']
+            RiskDataSetPoints.objects().get_or_create(risk_dataset=rd, point=pts_satis_ort, variable='Satış Ortalama')
+            RiskDataSetPoints.objects().get_or_create(risk_dataset=rd, point=pts_satis_ort, variable='İade Yüzde')
+            RiskDataSetPoints.objects().get_or_create(risk_dataset=rd, point=pts_satis_ort, variable='Gecikme Bakiye')
+            RiskDataSetPoints.objects().get_or_create(risk_dataset=rd, point=pts_satis_ort, variable='Gecikme Sayı')
+            RiskDataSetPoints.objects().get_or_create(risk_dataset=rd, point=pts_satis_ort, variable='Devir Günü')
+            RiskDataSetPoints.objects().get_or_create(risk_dataset=rd, point=pts_satis_ort, variable='Teminat Riski')
 
         return {
             'Son 12 Ay Satış Ortalamasından Sapma': pts_satis_ort,
@@ -416,16 +429,11 @@ class AnalyzeManager(BaseAnalyze):
             'domain_sum_pts': self.get_domain_sum_points()
         }
 
-        # sum_pts = sum([pts_satis_ort, pts_iade_yuzdesi, pts_gecikme_bakiye, pts_gecikme_sayisi,
-        #                pts_devir_gunu, pts_teminat_riski])
-        # domain_sum_pts = self.get_domain_sum_points()
-        # general_point = sum_pts / domain_sum_pts
-
-        # return general_point
-
 
 class RiskDatasetPointsManager(models.Manager):
-    pass
+    def analyze_all_riskdataset(self):
+        for rdp in self.filter(risk_dataset__isnull=True):
+            self.get_or_create()
 
 
 class BaseDummyCreator(models.Manager):

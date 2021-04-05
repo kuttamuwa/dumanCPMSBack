@@ -6,6 +6,7 @@ from checkaccount.models.models import CheckAccount
 from dumanCPMSRevise.settings import BASE_DIR, DEBUG
 from riskanalysis.models.models import DataSetModel, RiskDataSetPoints
 from riskanalysis.views.api import AnalyzeBaseError
+from deprecated import deprecated
 
 
 class BaseImport:
