@@ -286,6 +286,7 @@ class AnalyzeManager(BaseAnalyze):
         return general_point
 
     def analyze(self, rd, get_subpoints=False):
+        from riskanalysis.models.models import RiskDataSetPoints
         self.kontrol()
         analiz_karari = self.analiz_karari()
 
