@@ -102,7 +102,7 @@ class RiskDataSetManager(models.Manager):
 
         subpoints = None
         rp = AnalyzeManager(riskdataset=rd)
-        general_point = rp.analyze(get_subpoints=get_subpoints)
+        general_point = rp.analyze(rd, get_subpoints=get_subpoints)
 
         return general_point, subpoints
 
