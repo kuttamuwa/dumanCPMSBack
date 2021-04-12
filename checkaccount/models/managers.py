@@ -106,7 +106,7 @@ class DummyCheckAccountCreator(BaseDummyCreator):
         print(f"Sanal hesap üretildi : {obj.firm_full_name}")
         return obj
 
-    def check_or_create_dummy(self, firm_full_name=None, taxpayer_number=None, create_dummy=False, *args, **kwargs):
+    def check_or_create_dummy(self, firm_full_name=None, taxpayer_number=None, create_dummy=False):
         try:
             obj = self.get(taxpayer_number=taxpayer_number)
             print(f"Eşleşen bulundu : {firm_full_name}")
@@ -116,5 +116,4 @@ class DummyCheckAccountCreator(BaseDummyCreator):
             if create_dummy:
                 return self.gen_user(firm_full_name=firm_full_name, taxpayer_number=taxpayer_number, create_dummy=True)
             else:
-                return self.create(firm_full_name=firm_full_name, taxpayer_number=taxpayer_number,
-                                   *args, **kwargs)
+                raise ValueError('Cari hesap bulunamadı, dummy veri üret seçeneğini açmanız gerekir')

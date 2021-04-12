@@ -2,9 +2,10 @@ from appconfig.errors.base_exception import AppConfigBaseException
 
 
 class BaseAnalyzeErrors(AppConfigBaseException):
-    raise_state = True
+    default_detail = "Analiz katmanında hata !"
+    default_code = 500
 
 
 class NoRiskDataset(BaseAnalyzeErrors):
-    pass
-
+    default_detail = "Risk dataset yok !"
+    default_code = 400

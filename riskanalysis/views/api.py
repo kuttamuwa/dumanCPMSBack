@@ -457,7 +457,7 @@ class CardsAPI(viewsets.ReadOnlyModelViewSet):
         :return:
         """
         vlist = SystemBlackList.objects.all()
-        result = self.get_borclular(vlist, konu = 'Sistem Kara Listesinde !', match=match)
+        result = self.get_borclular(vlist, konu='Sistem Kara Listesinde !', match=match)
 
         return result
 
@@ -575,5 +575,3 @@ class APINoDataException(APIException):
 class AnalyzeBaseError(APIException):
     status_code = 500
     default_detail = 'Verinizi analiz ederken bir hatayla karşılaşıldı ! '
-
-    

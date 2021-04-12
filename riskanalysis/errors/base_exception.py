@@ -7,6 +7,7 @@ from appconfig.errors.base_exception import AppConfigBaseException
 
 
 class RiskAnalysisBaseException(AppConfigBaseException):
-    pass
+    default_detail = 'Risk analizi katmanında hata !'
+    default_code = 500
 
 

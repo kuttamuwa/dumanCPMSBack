@@ -73,7 +73,8 @@ class RiskDataSetManager(models.Manager):
         return teminat_durumu
 
     def create(self, *args, **kwargs):
-        kwargs['musteri'] = CheckAccount.dummy_creator.check_or_create_dummy(create_dummy=True, *args, **kwargs)
+        if not kwargs['musteri']:
+            kwargs['musteri'] = CheckAccount.dummy_creator.check_or_create_dummy(*args, **kwargs)
         kwargs['teminat_durumu'] = self.teminat_check(kwargs.get('teminat_durumu'),
                                                       kwargs.get('teminat_tutari'))
 

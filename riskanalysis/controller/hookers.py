@@ -1,12 +1,12 @@
 import os
+
 import pandas as pd
 from numpy import nan
 
 from checkaccount.models.models import CheckAccount
-from dumanCPMSRevise.settings import BASE_DIR, DEBUG
+from dumanCPMSRevise.settings import BASE_DIR
 from riskanalysis.models.models import DataSetModel, RiskDataSetPoints
 from riskanalysis.views.api import AnalyzeBaseError
-from deprecated import deprecated
 
 
 class BaseImport:
@@ -102,7 +102,8 @@ class ImportRiskDataset(BaseImport):
 
             print("Imported risk datasets")
 
-class AnalyzeRiskDataset():
+
+class AnalyzeRiskDataset:
     @classmethod
     def analyze_all(cls):
         try:
@@ -110,6 +111,7 @@ class AnalyzeRiskDataset():
             print("Risk Dataset verilerinin tamamı tarandı ve analiz puanları güncellendi ")
 
         except Exception as err:
-             err = f'{AnalyzeBaseError.default_detail} \n Kaynak Hata : {err} + \n Ilgili obje : {rd} + ' 
-             print(f"Lan hata aldık ! : {err}")
-             raise AnalyzeBaseError(default_detail=err)
+            err = f'{AnalyzeBaseError.default_detail} \n Kaynak Hata : {err}'
+            print(f"Lan hata aldık ! : {err}")
+            raise AnalyzeBaseError(default_detail=err)
+
