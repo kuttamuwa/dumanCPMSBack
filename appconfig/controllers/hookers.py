@@ -1,7 +1,7 @@
-import pandas as pd
 import os
 
-from appconfig.errors.cruds import ImpossibleDecision
+import pandas as pd
+
 from appconfig.models.models import VergiBorcuListesi, SGKBorcuListesi, Domains, Subtypes
 from checkaccount.models.models import CheckAccount
 from dumanCPMSRevise.settings import BASE_DIR, DEBUG
@@ -94,70 +94,74 @@ class ImportExternalData:
 
     def ca_check(self):
         # check account data yuklendi mi
+        from checkaccount.controllers.apps import CheckaccountConfig
+        CheckaccountConfig.import_account_data()
+
+    def vergi_yukle(self):
+        print("Vergi borçlularını yükleyelim")
         from checkaccount.models.models import CheckAccount
-        if CheckAccount.objects.all().__len__() == 0:
-            from checkaccount.controllers.apps import CheckaccountConfig
-            CheckaccountConfig.import_account_data()
-        else:
-            print("Check account yuklenmis")
 
-    def vergi_yukle(self, create_dummy=True):
-        if VergiBorcuListesi.objects.all().__len__() == 0:
-            print("Vergi borçlularını yükleyelim")
-            from checkaccount.models.models import CheckAccount
+        df = self.read_from_excel(self.vergiborcu)
+        kno_list = tuple(df['Vergi Kimlik No'])
 
-            df = self.read_from_excel(self.vergiborcu)
-            kno_list = tuple(df['Vergi Kimlik No'])
+        df = df[df['Vergi Kimlik No'].isin(kno_list)]
 
-            df = df[df['Vergi Kimlik No'].isin(kno_list)]
+        for index, row in df.iterrows():
+            daire = row.get('Vergi Dairesi')
+            kno = row.get('Vergi Kimlik No')
+            adsoyad = row.get('Adı Soyadı')
+            faaliyet_konusu = row.get('Esas Faaliyet Konusu')
+            borcu = row.get('Vergi Borcu')
 
-            for index, row in df.iterrows():
-                daire = row.get('Vergi Dairesi')
-                kno = row.get('Vergi Kimlik No')
-                adsoyad = row.get('Adı Soyadı')
-                faaliyet_konusu = row.get('Esas Faaliyet Konusu')
-                borcu = row.get('Vergi Borcu')
-
-                acc = CheckAccount.dummy_creator.check_or_create_dummy(
+            try:
+                acc = CheckAccount.objects.get(
                     firm_full_name=adsoyad,
-                    taxpayer_number=kno,
-                    create_dummy=create_dummy
+                    taxpayer_number=kno
                 )
+                VergiBorcuListesi.objects.check_or_create(vergi_departmani=daire,
+                                                          borc_sahibi=acc,
+                                                          esas_faaliyet_konusu=faaliyet_konusu,
+                                                          borc_miktari=borcu)
 
-                try:
-                    VergiBorcuListesi.objects.check_or_create(vergi_departmani=daire,
-                                                              borc_sahibi=acc,
-                                                              esas_faaliyet_konusu=faaliyet_konusu,
-                                                              borc_miktari=borcu)
-                except Exception as err:
-                    print(f"Vergi borçluları yüklenirken hata : {str(err)}")
+            except CheckAccount.DoesNotExist:
+                pass
 
-            print("Vergi borçluları tarama yükleme tamamlandı")
+            except Exception as err:
+                print(f"Vergi borçluları yüklenirken hata : {str(err)}")
 
-    def sgk_yukle(self, create_dummy=False):
-        if SGKBorcuListesi.objects.all().__len__() == 0:
-            print("SGK borçlularını yükleyelim")
-            df = self.read_from_excel(self.sgkborcu)
-            for index, row in df.iterrows():
-                kimlikno = row.get('Kimlik No')
-                adsoyad = row.get('Ad Soyad')
-                borc_sahibi = CheckAccount.dummy_creator.check_or_create_dummy(
+        print("Vergi borçluları tarama yükleme tamamlandı")
+
+    def sgk_yukle(self):
+        print("SGK borçlularını yükleyelim")
+        df = self.read_from_excel(self.sgkborcu)
+
+        # sadece kimlik no uyusanlar
+        df = df[df['Kimlik No'].isin([int(i['taxpayer_number'])
+                                      for i in CheckAccount.objects.values('taxpayer_number')])]
+
+        for index, row in df.iterrows():
+            kimlikno = row.get('Kimlik No')
+            adsoyad = row.get('Ad Soyad')
+            borcu = row.get('Borç Tutarı')
+
+            try:
+                borc_sahibi = CheckAccount.objects.get(
                     firm_full_name=adsoyad,
                     taxpayer_number=kimlikno,
-                    create_dummy=create_dummy
+                )
+                SGKBorcuListesi.objects.get_or_create(
+                    kimlikno=kimlikno,
+                    borc_sahibi=borc_sahibi,
+                    borc_miktari=borcu
                 )
 
-                borcu = row.get('Borç Tutarı')
-                try:
-                    SGKBorcuListesi.objects.get_or_create(
-                        kimlikno=kimlikno,
-                        borc_sahibi=borc_sahibi,
-                        borc_miktari=borcu
-                    )
-                except Exception as err:
-                    print(f"SGK yüklenirken hata : {str(err)}")
+            except CheckAccount.DoesNotExist:
+                pass
 
-            print("SGK borçluları tarama yükleme tamamlandı")
+            except Exception as err:
+                print(f"SGK yüklenirken hata : {str(err)}")
+
+        print("SGK borçluları tarama yükleme tamamlandı")
 
     def sektorkaraliste_yukle(self):
         raise NotImplementedError
@@ -179,5 +183,8 @@ class ImportExternalData:
     def runforme(self):
         if not DEBUG:
             self.ca_check()
-            self.vergi_yukle(create_dummy=False)
-            self.sgk_yukle(create_dummy=False)
+            self.vergi_yukle()
+            self.sgk_yukle()
+
+            print("Cari hesaplar yüklendi. Bunlarla ilişkili vergi borçluları ve SGK borçluları varsa sisteme yüklendi "
+                  "ve eşleştirildi.")

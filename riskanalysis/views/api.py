@@ -12,6 +12,7 @@ from rest_framework.views import APIView
 
 from appconfig.models.models import Domains, VergiBorcuListesi, SGKBorcuListesi, SystemBlackList, KonkordatoList
 from checkaccount.models.models import CheckAccount
+from riskanalysis.errors.cruds import RiskDatasetCannotCreate
 from riskanalysis.models.models import DataSetModel, RiskDataSetPoints
 from riskanalysis.models.serializers import RiskPointsSerializer, RiskPointsGetSerializer, \
     DatasetSerializerGeneral, DatasetSerializerExclusive, CardSerializer
@@ -37,7 +38,6 @@ class DatasetAPI(viewsets.ModelViewSet):
         RiskPointsAPI().analyze_all(again)
 
     def get_queryset(self):
-        self.fill_all_points()
         qset = super(DatasetAPI, self).get_queryset()
         return qset
 
@@ -56,9 +56,9 @@ class DatasetAPI(viewsets.ModelViewSet):
                 try:
                     DataSetModel().read_from_excel(save_path)
                 except Exception as err:
-                    # herhangi bi hata cikmis olabilir
-                    errors.append(err)
-                    state = status.HTTP_417_EXPECTATION_FAILED
+                    raise RiskDatasetCannotCreate(detail=err,
+                                                  code=500)
+
                 finally:
                     os.remove(save_path)
 
@@ -181,7 +181,7 @@ class RiskPointsAPI(viewsets.ModelViewSet):
                 rp = RiskDataSetPoints(risk_dataset=dataset, variable='TOPLAM')
                 analyzer = rp.analyzer(rp.risk_dataset)
                 try:
-                    general_point = analyzer.analyze(get_subpoints=False)
+                    general_point = analyzer.analyze(rd=dataset, get_subpoints=False)
                     rp.point = general_point
                     dataset.general_point = general_point
 

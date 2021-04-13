@@ -46,9 +46,7 @@ class ImportRiskDataset(BaseImport):
 
             row = row.drop(['VKNTC'], axis=0)
 
-            musteri = CheckAccount.dummy_creator.check_or_create_dummy(firm_full_name=None,
-                                                                       taxpayer_number=taxpayer_number,
-                                                                       create_dummy=True)
+            musteri = CheckAccount.dummy_creator.check_or_create_dummy(taxpayer_number=taxpayer_number)
             limit = row.get('Limit')
 
             # teminat = row.get(
@@ -88,19 +86,14 @@ class ImportRiskDataset(BaseImport):
                                                             ort_gecikme_gun_bakiyesi=ort_gecikme_gun_bakiyesi,
                                                             bakiye=bakiye,
                                                             analyze_now=analyze_now)
-            if analyze_now:
-                for k, v in pts.items():
-                    RiskDataSetPoints.objects.update_or_create(risk_dataset=obj, variable=k, point=v)
-
         return True
 
     def runforme(self):
-        if len(DataSetModel.objects.all()) == 0:
-            print("Risk dataseti yukleyelim")
-            df = self.read_from_excel()
-            self._save(df)
+        print("Risk dataseti yukleyelim")
+        df = self.read_from_excel()
+        self._save(df)
 
-            print("Imported risk datasets")
+        print("Imported risk datasets")
 
 
 class AnalyzeRiskDataset:
@@ -114,4 +107,3 @@ class AnalyzeRiskDataset:
             err = f'{AnalyzeBaseError.default_detail} \n Kaynak Hata : {err}'
             print(f"Lan hata aldık ! : {err}")
             raise AnalyzeBaseError(default_detail=err)
-

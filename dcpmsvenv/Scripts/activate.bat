@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=C:\Users\Mert\Documents\SoftwareProjects\dumanCPMSBack\dumanCPMSBack\dcpmsvenv
+set VIRTUAL_ENV=C:\Users\umut\PycharmProjects\dumanCPMSBack\dcpmsvenv
 
 if not defined PROMPT set PROMPT=$P$G
 

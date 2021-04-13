@@ -67,7 +67,7 @@ class SGKBorcuListesi(BaseBlackLists):
     borc_miktari = models.FloatField(unique=False,
                                      help_text='Borç Miktarı',
                                      db_column='DEPT_AMOUNT')
-    borc_sahibi = models.ForeignKey(CheckAccount, on_delete=models.CASCADE)
+    borc_sahibi = models.ForeignKey(CheckAccount, on_delete=models.CASCADE, null=True)
 
     class Meta:
         db_table = 'SGK_DEBTS'
@@ -86,7 +86,7 @@ class VergiBorcuListesi(BaseBlackLists):
     borc_miktari = models.FloatField(unique=False,
                                      help_text='Borç Miktarı',
                                      db_column='DEPT_AMOUNT')
-    borc_sahibi = models.ForeignKey(CheckAccount, on_delete=models.CASCADE)
+    borc_sahibi = models.ForeignKey(CheckAccount, on_delete=models.CASCADE, null=True)
 
     objects = VergiBorcuManager()
 

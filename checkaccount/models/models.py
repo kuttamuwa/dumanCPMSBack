@@ -67,20 +67,24 @@ class CheckAccount(BaseModel):
     dummy_creator = DummyCheckAccountCreator()
     objects = models.Manager()
 
-    dummy = models.BooleanField(verbose_name='dummy', name='dummy', null=True, 
-    help_text='Eğer eşleşen bir müşteriniz yoksa sizin için dummy (sahte, sanal) bir kullanıcı oluşturabiliriz. Varsayılan değer "True" olarak kullanılacak, yoksa hata verir.',
-    default=True)
+    dummy = models.BooleanField(verbose_name='dummy', name='dummy', null=True,
+                                help_text='Eğer eşleşen bir müşteriniz yoksa sizin için dummy (sahte, sanal) bir '
+                                          'kullanıcı oluşturabiliriz. Varsayılan değer "True" olarak kullanılacak, '
+                                          'yoksa hata verir.',
+                                default=True)
 
     firm_type = models.CharField(max_length=20, choices=[('Tüzel Kişilik', 'Tüzel Kişilik'),
                                                          ('Şahıs İşletmesi', 'Şahıs İşletmesi')],
                                  verbose_name='Firma Tipi', help_text='Şahıs mı Tüzel mi olduğunu giriniz',
                                  db_column='FIRM_TYPE', null=True, default='Tüzel Kişilik')
-    firm_full_name = models.CharField(max_length=250, verbose_name='Firma Adı',
-                                      db_column='FIRM_FULLNAME', null=True, default='Firma Test')
+
+    firm_full_name = models.CharField(max_length=250, verbose_name='Firma Adı', unique=True,
+                                      db_column='FIRM_FULLNAME', null=False, default='Firma Test')
+
     taxpayer_number = models.CharField(max_length=15, verbose_name='Kimlik No',
                                        help_text='Sahis firmasi ise TCKNO, Tuzel Kisilik ise Vergi No',
-                                       unique=False,
-                                       db_column='TAXPAYER_NUMBER', null=True)
+                                       unique=True,
+                                       db_column='TAXPAYER_NUMBER', null=False)
 
     birthplace = models.CharField(max_length=100, verbose_name='Doğum yeri',
                                   null=True, blank=True)

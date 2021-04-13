@@ -4,6 +4,8 @@ from riskanalysis.models.models import DataSetModel, RiskDataSetPoints
 
 
 class DatasetSerializerGeneral(serializers.ModelSerializer):
+    musteri = serializers.CharField(source='musteri.firm_full_name')
+
     class Meta:
         model = DataSetModel
         fields = '__all__'

@@ -16,6 +16,7 @@ class RiskanalysisConfig(AppConfig):
             self.import_test_data()
             self.analyze_all()
 
-    def analyze_all(self):
+    @staticmethod
+    def analyze_all():
         from riskanalysis.controller.hookers import AnalyzeRiskDataset
         AnalyzeRiskDataset.analyze_all()

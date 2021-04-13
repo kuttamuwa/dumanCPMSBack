@@ -11,21 +11,25 @@ class CheckaccountConfig(AppConfig):
         # il ilçe yükleme
         from checkaccount.controllers.hookers import ImportCityDistrict
         ImportCityDistrict().runforme()
+        print("İl ilçe verisi yüklendi ")
 
     @staticmethod
     def import_sys_personnels():
         from checkaccount.controllers.hookers import ImportPersonnels
-        ImportPersonnels().test_runforme()
+        ImportPersonnels().runforme()
+        print("Sistem personelleri yüklendi")
 
     @staticmethod
     def import_account_data():
         from checkaccount.controllers.hookers import ImportAccounts
-        ImportAccounts().test_runforme()
+        ImportAccounts().runforme()
+        print("Cari hesaplar yüklendi")
 
     @staticmethod
     def import_sector_data():
         from checkaccount.controllers.hookers import ImportSectors
-        ImportSectors().test_runforme()
+        ImportSectors().runforme()
+        print("Sektör listesi yüklendi ")
 
     def ready(self):
         if not DEBUG:

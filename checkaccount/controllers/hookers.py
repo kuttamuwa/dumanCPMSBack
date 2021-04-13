@@ -21,7 +21,7 @@ class BaseImport:
     def _save(df):
         raise NotImplementedError
 
-    def test_runforme(self):
+    def runforme(self):
         raise NotImplementedError
 
 
@@ -37,19 +37,18 @@ class ImportCityDistrict(BaseImport):
         print("İl ve ilçeler yüklendi")
         return True
 
-    def delete_districts(self):
+    @staticmethod
+    def delete_districts():
         Districts.objects.all().delete()
 
-    def delete_cities(self):
+    @staticmethod
+    def delete_cities():
         Cities.objects.all().delete()
 
     def runforme(self):
         if not DEBUG:
-            if len(Districts.objects.all()) == 0:
-                df = self.read_from_excel()
-                self._save(df)
-
-                print("Imported city and districts")
+            df = self.read_from_excel()
+            self._save(df)
 
 
 class ImportPersonnels(BaseImport):
@@ -69,38 +68,26 @@ class ImportPersonnels(BaseImport):
 
         return True
 
-    def test_runforme(self):
+    def runforme(self):
         if not DEBUG:
-            if len(SysPersonnel.objects.all()) == 0:
-                df = self.read_from_excel()
-                self._save(df)
-
-                print("Imported sys personnels")
+            df = self.read_from_excel()
+            self._save(df)
 
 
 class ImportAccounts(BaseImport):
     data = 'accounts.xlsx'
 
     @staticmethod
-    def _save(df):
-        for index, row in df.iterrows():
-            firm_full_name = row.get('firm_full_name')
-            taxpayer_number = row.get('taxpayer_number')
-            row = row.drop(['firm_full_name', 'taxpayer_number'], axis=0)
+    def create_dummy_accounts(df):
+        for _, row in df.iterrows():
+            CheckAccount.dummy_creator.get_or_create(**dict(row))
+        print("Dummy veriler yüklendi")
 
-            CheckAccount.dummy_creator.check_or_create_dummy(firm_full_name, taxpayer_number,
-                                                             create_dummy=False,
-                                                             **dict(row))
-
-    def test_runforme(self):
+    def runforme(self):
         if not DEBUG:
             df = self.read_from_excel()
 
-            # dummy olduklarını belirtelim
-            df['dummy'] = True
-            self._save(df)
-
-            print("Cari hesaplar yüklendi")
+            self.create_dummy_accounts(df)
 
 
 class ImportSectors(BaseImport):
@@ -112,10 +99,9 @@ class ImportSectors(BaseImport):
             sektor = row.SEKTORADI
             Sectors.objects.get_or_create(name=sektor)
 
-    def test_runforme(self):
+    def runforme(self):
         if not DEBUG:
-            if len(Sectors.objects.all()) == 0:
-                df = self.read_from_excel()
-                self._save(df)
+            df = self.read_from_excel()
+            self._save(df)
 
-                print("Sektörler yüklendi")
+            print("Sektörler yüklendi")

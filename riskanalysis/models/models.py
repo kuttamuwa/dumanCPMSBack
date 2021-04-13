@@ -86,6 +86,8 @@ class DataSetModel(BaseModel):
     def read_from_excel(self, riskdataset_path):
         try:
             df = pd.read_excel(riskdataset_path)
+            df.replace({np.nan: None}, inplace=True)
+
             return self._save(df)
         except IOError as err:
             # dosya silinmis olabilir? o kisa sure icerisinde kim silecek gerci?
@@ -95,11 +97,10 @@ class DataSetModel(BaseModel):
             # dogru sutunlar girilmemis olabilir
             raise err
 
-    @staticmethod
-    def _save(df):
+    def _save(self, df):
         df.replace(np.nan, None, inplace=True)
         for index, row in df.iterrows():
-            musteri = int(row['VKNTC'])  # VKNTC
+            musteri = CheckAccount.dummy_creator.check_or_create_dummy(taxpayer_number=row['VKNTC'])
             limit = row['Limit']
 
             # teminat
@@ -125,9 +126,6 @@ class DataSetModel(BaseModel):
 
             bakiye = row.get('Bakiye')
 
-            # simdi mi analiz edilsin?
-            analyze_now = row.get('Analiz Et', True)
-
             DataSetModel.objects.get_or_create(musteri=musteri, limit=limit, teminat_durumu=teminat_durumu,
                                                teminat_tutari=teminat_tutari,
                                                vade=vade, vade_asimi_ortalamasi=vade_asimi_ortalamasi,
@@ -138,8 +136,10 @@ class DataSetModel(BaseModel):
                                                iade_yuzdesi_12=iade_yuzdesi_12,
                                                ort_gecikme_gun_sayisi=ort_gecikme_gun_sayisi,
                                                ort_gecikme_gun_bakiyesi=ort_gecikme_gun_bakiyesi,
-                                               bakiye=bakiye,
-                                               analyze_now=analyze_now)
+                                               bakiye=bakiye)
+
+        #  Hepsini analiz edelim
+        DataSetModel.objects.analyze_check_or_create()
 
         return True
 

@@ -78,8 +78,12 @@ class RiskDataSetManager(models.Manager):
         kwargs['teminat_durumu'] = self.teminat_check(kwargs.get('teminat_durumu'),
                                                       kwargs.get('teminat_tutari'))
 
-        return super(RiskDataSetManager, self).create(*args, **kwargs)
-    
+        # analizini de yapalim
+        rd = super(RiskDataSetManager, self).get_or_create(*args, **kwargs)[0]
+        rd = self.analyze_me_and_save(rd=rd)
+
+        return rd
+
     def analyze_check_or_create(self):
         for rd in self.all():
             self.analyze_me_and_save(rd)
@@ -94,9 +98,15 @@ class RiskDataSetManager(models.Manager):
 
         return args, kwargs
 
+    def get_or_create(self, *args, **kwargs):
+        obj = super(RiskDataSetManager, self).get_or_create(*args, **kwargs)[0]
+        self.analyze_me_and_save(obj)
+        return obj
+
     def analyze_me_and_save(self, rd):
-        general_point, _ = self._analyze(rd, get_subpoints=False)
-        return self.update(general_point=general_point)
+        rd.general_point, _ = self._analyze(rd, get_subpoints=False)
+        rd.save()
+        return rd
 
     def _analyze(self, rd, get_subpoints=True, **kwargs):
         print(f"{rd.musteri.firm_full_name} analiz ediliyor..")
@@ -107,15 +117,13 @@ class RiskDataSetManager(models.Manager):
 
         return general_point, subpoints
 
-    def check_or_create(self, *args, **kwargs):
-        analyze_now = kwargs.get('analyze_now', True)
-
+    def check_or_create(self, analyze_now=True, *args, **kwargs):
         args, kwargs = self.__nan_to_none(args, kwargs)
 
         obj, status = super(RiskDataSetManager, self).get_or_create(*args, **kwargs)
 
         if analyze_now:
-            general_point, pts = self._analyze(obj, **kwargs)
+            general_point, pts = self._analyze(obj, **kwargs, get_subpoints=False)
             obj.general_point = general_point
             obj.save()
 
@@ -399,10 +407,7 @@ class AnalyzeManager(BaseAnalyze):
         pts = self.get_points_from_value(teminat_limit_risk_kars_seviyesi, pnt_df)
         pts = pts * domain_point
 
-        return pts 
-    
-    def create_each(**kwargs):
-        return self.get_or_create(**kwargs)[0]
+        return pts
 
     def calc_all_pts(self, **kwargs):
         from riskanalysis.models.models import RiskDataSetPoints

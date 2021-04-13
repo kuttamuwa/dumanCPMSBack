@@ -32,23 +32,25 @@ class CheckAccountAPI(viewsets.ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         return super(CheckAccountAPI, self).retrieve(request, *args, **kwargs)
 
-    def list(self, request, *args, **kwargs):
+    def param_parser(self):
         qparams = self.request.query_params
         qparams = {k: v for k, v in qparams.items() if k not in ('encoding',)}
 
+        # dummy parameter
+        dummy = qparams.get('dummy', True)
+        if dummy == 'false':
+            dummy = False
+        elif dummy == 'true':
+            dummy = True
+        qparams['dummy'] = dummy
+
+        return qparams
+
+    def list(self, request, *args, **kwargs):
+        qparams = self.param_parser()
         self.queryset = self.queryset.filter(**qparams)
 
         return super(CheckAccountAPI, self).list(request, *args, **kwargs)
-
-    @staticmethod
-    def fill_some_fields_auto(request):
-        request.POST._mutable = True
-
-        request.POST['web_url'] = 'https://cli.vuejs.org/guide/mode-and-env.html#environment-variables'
-        request.POST['email_addr'] = 'ucok.umut@gmail.com'
-
-        request.POST._mutable = False
-        return request
 
 
 class SysPersonnelAPI(viewsets.ModelViewSet):
