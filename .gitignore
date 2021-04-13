@@ -6,3 +6,5 @@
 /.idea/
 /duman-cpms/node_modules
 /dcpmsvenv/*
+/app.db
+/appdb.db
