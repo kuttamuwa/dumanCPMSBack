@@ -5,6 +5,6 @@
 /dumanCPMSRevise/settings.py
 /.idea/
 /duman-cpms/node_modules
-/dcpmsvenv/*
+/dcpmsvenv
 /app.db
 /appdb.db
