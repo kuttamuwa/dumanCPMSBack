@@ -2,7 +2,7 @@ from django.db import models
 
 from .basemodels import BaseModel
 from .fields import DumanModelFileField
-from .managers import DummyCheckAccountCreator
+from .managers import DummyCheckAccountCreator, AccountManager
 
 
 class Cities(BaseModel):

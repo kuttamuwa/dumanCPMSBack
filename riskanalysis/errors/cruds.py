@@ -2,17 +2,8 @@ from riskanalysis.errors.base_exception import RiskAnalysisBaseException
 
 
 class RiskDatasetCannotCreate(RiskAnalysisBaseException):
-    message = "Cannot be created !"
-    raise_state = True
-    item = None
-
-    @classmethod
-    def set_tr(cls):
-        cls.message = f"{cls.item} oluşturulamadı !"
-
-    @classmethod
-    def set_en(cls):
-        cls.message = f"{cls.item} cannot be created !"
+    default_detail = "Cannot be created !"
+    default_code = 500
 
 
 class RiskDatasetCannotUpdate(RiskAnalysisBaseException):

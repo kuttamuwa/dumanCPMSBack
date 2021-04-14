@@ -26,7 +26,6 @@ class DatasetRenderer(JSONRenderer):
 class DatasetAPI(viewsets.ModelViewSet):
     queryset = DataSetModel.objects.all().order_by('-created_date')
     serializer_class = DatasetSerializerGeneral
-    # renderer_classes = [DatasetRenderer]
 
     permission_classes = [
         IsAuthenticated,
@@ -83,7 +82,24 @@ class DatasetAPI(viewsets.ModelViewSet):
             )
         except KeyError:
             print("Excel gonderilmiyor, direkt kayit acilacak")
-            return super(DatasetAPI, self).create(request, *args, **kwargs)
+            try:
+                return super(DatasetAPI, self).create(request, *args, **kwargs)
+
+            except Exception as err:
+                raise RiskDatasetCannotCreate(detail=err)
+
+    @staticmethod
+    def handle_request_post(request):
+        request.POST._mutable = True
+        data_id = int(request.POST['musteri'])
+
+        try:
+            request.POST['musteri'] = data_id
+
+        except CheckAccount.DoesNotExist:
+            raise NoCheckAccountFound
+
+        return request
 
     def update(self, request, *args, **kwargs):
         return super(DatasetAPI, self).update(request, *args, **kwargs)
@@ -204,7 +220,7 @@ class RiskPointsAPI(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """
-        Creation işlemi risk points hesaplamalarında izin verilmez. Buraya gelen create isteği aslında POST
+        Creation işlemi risk points hesaplamalarında izin verilmez. Buraya gelen dummy_create isteği aslında POST
         risk_dataset parametresi verilmiş
         :param request:
         :param args:
@@ -575,3 +591,8 @@ class APINoDataException(APIException):
 class AnalyzeBaseError(APIException):
     status_code = 500
     default_detail = 'Verinizi analiz ederken bir hatayla karşılaşıldı ! '
+
+
+class NoCheckAccountFound(APIException):
+    status_code = 500
+    default_detail = 'Verdiğiniz ID kullanılarak cari hesap bulunamadı !'

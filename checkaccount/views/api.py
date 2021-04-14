@@ -52,6 +52,9 @@ class CheckAccountAPI(viewsets.ModelViewSet):
 
         return super(CheckAccountAPI, self).list(request, *args, **kwargs)
 
+    def create(self, request, *args, **kwargs):
+        return super(CheckAccountAPI, self).create(request, *args, **kwargs)
+
 
 class SysPersonnelAPI(viewsets.ModelViewSet):
     queryset = SysPersonnel.objects.all().order_by('-created_date')

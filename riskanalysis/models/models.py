@@ -12,7 +12,6 @@ from checkaccount.models.models import CheckAccount
 
 class DataSetModel(BaseModel):
     objects = RiskDataSetManager()
-    # dummy_creator = DummyRiskAnalysisCreator()
 
     musteri = models.ForeignKey(CheckAccount, on_delete=models.CASCADE, verbose_name='İlişkili Müşteri',
                                 null=True, blank=True, db_column='CUSTOMER')

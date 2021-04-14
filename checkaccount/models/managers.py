@@ -115,5 +115,10 @@ class DummyCheckAccountCreator(BaseDummyCreator):
         except models.ObjectDoesNotExist:
             return self.gen_user(*args, **kwargs, create_dummy=True)
 
-    def create(self, *args, **kwargs):
+    def dummy_create(self, *args, **kwargs):
         return super(DummyCheckAccountCreator, self).create(*args, **kwargs, dummy=True)
+
+
+class AccountManager(models.Manager):
+    pass
+
